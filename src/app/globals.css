@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+@theme {
+  --color-orange-50: #fff8f0;
+  --color-orange-100: #ffedd5;
+  --color-orange-200: #fed7aa;
+  --color-orange-300: #fdba74;
+  --color-orange-400: #fb923c;
+  --color-orange-500: #f97316;
+  --color-orange-600: #ea6c00;
+  --color-orange-700: #c2570a;
+  --color-orange-800: #9a3c04;
+  --color-orange-900: #7c2d12;
+  --color-surface: #ffffff;
+  --color-surface-2: #fafaf9;
+  --color-border: #e7e5e4;
+  --color-text: #1c1917;
+  --color-text-muted: #78716c;
+}
+
+html, body {
+  height: 100%;
+}
+
+#__next {
+  height: 100%;
+}
+
+/* Smooth scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #fb923c transparent;
+}
+
+/* Markdown content in messages */
+.prose-chat p { margin-bottom: 0.5rem; }
+.prose-chat p:last-child { margin-bottom: 0; }
+.prose-chat code {
+  background: #f5f5f4;
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-size: 0.875em;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+}
+.prose-chat pre {
+  background: #1c1917;
+  color: #e7e5e4;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+  font-size: 0.8125em;
+  line-height: 1.6;
+}
+.prose-chat pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+.prose-chat ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 0.5rem; }
+.prose-chat ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 0.5rem; }
+.prose-chat li { margin-bottom: 0.25rem; }
+.prose-chat h1,.prose-chat h2,.prose-chat h3 { font-weight: 600; margin: 0.75rem 0 0.25rem; }
+.prose-chat strong { font-weight: 600; }
+.prose-chat a { color: #ea6c00; text-decoration: underline; }
+.prose-chat blockquote {
+  border-left: 3px solid #fb923c;
+  padding-left: 1rem;
+  color: #78716c;
+  margin: 0.5rem 0;
+}
+
+/* Streaming cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.streaming-cursor::after {
+  content: '▋';
+  animation: blink 0.8s step-end infinite;
+  color: #f97316;
+  margin-left: 1px;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Typing dots */
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+.typing-dot:nth-child(1) { animation: bounce 1.2s infinite 0s; }
+.typing-dot:nth-child(2) { animation: bounce 1.2s infinite 0.2s; }
+.typing-dot:nth-child(3) { animation: bounce 1.2s infinite 0.4s; }

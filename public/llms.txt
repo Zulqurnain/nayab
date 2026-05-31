@@ -1,0 +1,31 @@
+# Nayab — Free AI Chat powered by offLLama
+
+> Nayab is a lightweight, privacy-first AI chat assistant. Free tier powered by offLLama, a self-hosted inference engine. Paid plan available via Gumroad.
+
+## About
+
+Nayab is a ChatGPT-style web app built to showcase offLLama — an open-source library for running llama.cpp inference on any Node.js host.
+
+URL: https://chat.zulqurnainj.com
+Also available at: https://zulqurnainj.com/chat
+Built by: Zulqurnain Haider (https://zulqurnainj.com)
+
+## Features
+
+- Streaming AI responses
+- File upload support (PDF, TXT, RTF, PNG, JPG — 1 MB max)
+- Text to speech (browser-native)
+- Optional web search via DuckDuckGo
+- Model selection for paid users
+- Privacy-first: no persistent storage of chats or files
+- Rate limited: 1 request per 5 seconds (fair use)
+
+## Plans
+
+Free: Self-hosted offLLama model (Qwen 2.5)
+Paid: $10/month via Gumroad — unlocks GPT-4o, Claude, and other models
+
+## Support
+
+Ko-fi: https://ko-fi.com/zulqurnainjj
+Gumroad: https://zulqurnainjj.gumroad.com/l/nayab
