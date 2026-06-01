@@ -164,15 +164,15 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent pointer-events-none" />
             <div className="relative">
               <p className="text-xs font-bold text-orange-400 uppercase tracking-widest mb-3">Model recommendation</p>
-              <h3 className="text-2xl font-bold mb-3">Qwen 2.5-1.5B · Best for CPU-only VPS</h3>
+              <h3 className="text-2xl font-bold mb-3">SmolLM2-360M · Tuned for fast CPU chat</h3>
               <p className="text-stone-400 mb-5 leading-relaxed text-sm">
-                After testing 0.5B, 1.5B, 3B, and 4B models on a 6-core AMD EPYC with 12GB RAM, Qwen 2.5-1.5B delivers the best balance of response quality and speed. At Q4_K_M quantization it fits in ~1.1GB RAM, generates at 4-6 tokens/second with AVX2, and streams first tokens in 3-5 seconds. Larger models like Phi-3.5-mini (3.8B) or MiniCPM (4B) time out on CPU for interactive chat.
+                After testing models from 0.5B to 4B on a 6-core AMD EPYC with 12GB RAM, we ship SmolLM2-360M (Hugging Face) as the default for the snappiest experience. At Q8_0 it fits in ~370MB RAM, streams the first token in ~2 seconds, and finishes most answers in 5 seconds — about 10× faster than a 1.5B model on CPU. For heavier reasoning, llmizeOFF can drop in SmolLM2-1.7B or Qwen2.5-1.5B with one config change.
               </p>
               <div className="grid grid-cols-3 gap-4 text-center">
                 {[
-                  { label: "Model size", value: "1.1 GB" },
-                  { label: "First token", value: "3-5 s" },
-                  { label: "Throughput", value: "4-6 tok/s" },
+                  { label: "Model size", value: "370 MB" },
+                  { label: "First token", value: "~2 s" },
+                  { label: "Throughput", value: "10-15 tok/s" },
                 ].map((s) => (
                   <div key={s.label} className="bg-white/5 rounded-xl p-3">
                     <p className="text-xl font-bold text-white">{s.value}</p>

@@ -7,7 +7,7 @@ Privacy-first AI assistant and the hosted demo of llmizeOFF, a self-hosted LLM r
 
 ## Features
 
-- Streaming chat with Qwen 2.5 (free) or GPT-4o/Claude (paid)
+- Streaming chat with SmolLM2 (free) or GPT-4o/Claude (paid)
 - File uploads: PDF, TXT, RTF, PNG, JPG (1 MB max, ephemeral)
 - Browser-native text to speech
 - Optional web search (DuckDuckGo)
@@ -15,7 +15,7 @@ Privacy-first AI assistant and the hosted demo of llmizeOFF, a self-hosted LLM r
 
 ## Plans
 
-- Free: llmizeOFF self-hosted model (Qwen 2.5) + Groq Llama 3.1
+- Free: llmizeOFF self-hosted model (SmolLM2) + Groq Llama 3.1
 - Paid ($10 one-time): GPT-4o, GPT-4o Mini, Claude Sonnet, Claude Haiku
 
 [Start chatting →](https://zulqurnainj.com/chat)

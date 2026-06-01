@@ -22,7 +22,7 @@ function Check({ included }: { included: boolean }) {
 }
 
 const FREE_FEATURES = [
-  { text: "Qwen 2.5 via llmizeOFF (self-hosted)", included: true },
+  { text: "SmolLM2 via llmizeOFF (self-hosted)", included: true },
   { text: "File uploads: PDF, TXT, RTF, PNG, JPG up to 1 MB", included: true },
   { text: "DuckDuckGo web search", included: true },
   { text: "Browser-native text-to-speech", included: true },
@@ -38,7 +38,7 @@ const PRO_FEATURES = [
   { text: "GPT-4o Mini (OpenAI)", included: true },
   { text: "Claude 3.5 Sonnet (Anthropic)", included: true },
   { text: "Claude 3 Haiku (Anthropic)", included: true },
-  { text: "Qwen 2.5 via llmizeOFF", included: true },
+  { text: "SmolLM2 via llmizeOFF", included: true },
   { text: "Approximately 300 messages per day", included: true },
   { text: "Priority inference", included: true },
 ];
@@ -51,7 +51,7 @@ const FAQ = [
   },
   {
     q: "Can Nayab see what I'm typing?",
-    a: "Free tier messages are processed by our self-hosted llmizeOFF server (Qwen 2.5) and never leave that server in a readable form. Pro tier messages are forwarded to OpenAI or Anthropic's APIs — the same path as using ChatGPT or Claude directly. We never read or log those payloads.",
+    a: "Free tier messages are processed by our self-hosted llmizeOFF server (SmolLM2) and never leave that server in a readable form. Pro tier messages are forwarded to OpenAI or Anthropic's APIs — the same path as using ChatGPT or Claude directly. We never read or log those payloads.",
   },
   {
     q: "Is Nayab private compared to ChatGPT?",
@@ -84,12 +84,12 @@ const FAQ = [
   },
   // Model quality
   {
-    q: "Is Qwen 2.5 (the free model) actually capable, or is it a watered-down model?",
-    a: "Qwen 2.5 is a full, production-quality open-source LLM from Alibaba Research. It handles coding, writing, summarisation, and reasoning well. It's not a toy — it's the same model class developers self-host for serious work. For most everyday tasks you won't hit its limits.",
+    q: "Which model does the free tier use?",
+    a: "SmolLM2-360M, a compact open-source model from Hugging Face, running self-hosted via llmizeOFF. It's tuned for speed — responses start streaming in a couple of seconds on CPU. Great for quick questions, drafting, and everyday chat. For heavier reasoning, switch to a Pro model.",
   },
   {
-    q: "When should I use Pro (GPT-4o / Claude) vs the free Qwen model?",
-    a: "Use Qwen for drafting, brainstorming, coding, Q&A, and summaries. Switch to GPT-4o or Claude for complex multi-step reasoning, nuanced long-form writing, or tasks where accuracy on hard questions really matters. You can switch models per conversation in-app.",
+    q: "When should I use Pro (GPT-4o / Claude) vs the free model?",
+    a: "Use the free SmolLM2 for fast drafting, brainstorming, Q&A, and summaries. Switch to GPT-4o or Claude for complex multi-step reasoning, nuanced long-form writing, or tasks where accuracy on hard questions really matters. You can switch models per conversation in-app.",
   },
   {
     q: "Do AI models on Nayab hallucinate or make mistakes?",

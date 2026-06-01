@@ -34,10 +34,10 @@ export interface Model {
 export const MODELS: Model[] = [
   {
     id: "llmizeoff",
-    name: "Qwen 2.5 (llmizeOFF)",
+    name: "SmolLM2 (llmizeOFF)",
     provider: "llmizeOFF · Self-hosted",
     tier: "free",
-    description: "Private local inference — no cloud, no data sent anywhere",
+    description: "Private local inference — fast, no cloud, no data sent anywhere",
   },
   {
     id: "groq-llama",
