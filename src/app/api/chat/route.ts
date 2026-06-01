@@ -76,7 +76,7 @@ async function streamLlmizeOff(
   });
   if (!res.ok) {
     const err = await res.text().catch(() => res.statusText);
-    throw new Error(`offLLama error ${res.status}: ${err}`);
+    throw new Error(`llmizeOFF error ${res.status}: ${err}`);
   }
   const reader = res.body!.getReader();
   const dec = new TextDecoder();

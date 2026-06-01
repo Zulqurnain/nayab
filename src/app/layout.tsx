@@ -3,17 +3,17 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "Nayab — Private AI Chat powered by offLLama",
-  description: "Fast, private AI chat powered by offLLama. No sign-up required. Upgrade for GPT-4o and Claude Sonnet.",
-  keywords: ["AI chat", "free AI", "offLLama", "ChatGPT alternative", "privacy AI", "self-hosted AI"],
+  title: "Nayab — Live Demo of llmizeOFF · Self-Hosted AI Runtime",
+  description: "Try llmizeOFF live. A self-hostable LLM runtime for VPS, Android, cPanel, and local systems. No subscriptions, no lock-in.",
+  keywords: ["llmizeOFF", "AI chat", "self-hosted AI", "offllama", "ChatGPT alternative", "privacy AI", "VPS AI"],
   openGraph: {
-    title: "Nayab — Private AI Chat",
-    description: "Fast, private AI chat powered by offLLama. No sign-up required.",
-    url: "https://chat.zulqurnainj.com",
+    title: "Nayab — Live Demo of llmizeOFF",
+    description: "Try llmizeOFF live. Self-hosted LLM runtime for VPS, Android, and local systems.",
+    url: "https://zulqurnainj.com/chat",
     siteName: "Nayab",
     type: "website",
   },
-  twitter: { card: "summary", title: "Nayab — Private AI Chat", description: "Fast, private AI chat powered by offLLama." },
+  twitter: { card: "summary", title: "Nayab — llmizeOFF Demo", description: "Try llmizeOFF — a self-hosted LLM runtime. No subscriptions, no lock-in." },
   robots: { index: true, follow: true },
 };
 

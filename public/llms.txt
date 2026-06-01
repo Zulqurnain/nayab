@@ -1,31 +1,38 @@
-# Nayab — Free AI Chat powered by offLLama
+# Nayab — Live Demo of llmizeOFF
 
-> Nayab is a lightweight, privacy-first AI chat assistant. Free tier powered by offLLama, a self-hosted inference engine. Paid plan available via Gumroad.
+> Nayab is the hosted demo of llmizeOFF, a self-hosted LLM runtime. Free tier runs Qwen 2.5 on a private server. Paid plan unlocks GPT-4o and Claude Sonnet.
 
 ## About
 
-Nayab is a ChatGPT-style web app built to showcase offLLama — an open-source library for running llama.cpp inference on any Node.js host.
+Nayab is a ChatGPT-style web app built to showcase llmizeOFF — an open-source library for running llama.cpp inference on any Node.js host (VPS, cPanel, Android, local machines).
 
-URL: https://chat.zulqurnainj.com
-Also available at: https://zulqurnainj.com/chat
+URL: https://zulqurnainj.com/chat
+llmizeOFF on GitHub: https://github.com/Zulqurnain/offllama
 Built by: Zulqurnain Haider (https://zulqurnainj.com)
 
 ## Features
 
-- Streaming AI responses
+- Real token streaming
 - File upload support (PDF, TXT, RTF, PNG, JPG — 1 MB max)
 - Text to speech (browser-native)
 - Optional web search via DuckDuckGo
 - Model selection for paid users
 - Privacy-first: no persistent storage of chats or files
-- Rate limited: 1 request per 5 seconds (fair use)
+- 4 free prompts without sign-up, then free account required
+
+## Models
+
+Free: Self-hosted llmizeOFF runtime (Qwen 2.5-1.5B)
+Free: Groq Llama 3.1 8B (cloud, sub-1-second)
+Paid: GPT-4o, GPT-4o Mini (OpenAI)
+Paid: Claude 3.5 Sonnet, Claude 3 Haiku (Anthropic)
 
 ## Plans
 
-Free: Self-hosted offLLama model (Qwen 2.5)
-Paid: $10/month via Gumroad — unlocks GPT-4o, Claude, and other models
+Free: Self-hosted llmizeOFF model (Qwen 2.5) — unlimited with free account
+Paid: $10 one-time via Gumroad — unlocks GPT-4o, Claude, and other models
 
 ## Support
 
 Ko-fi: https://ko-fi.com/zulqurnainjj
-Gumroad: https://zulqurnainjj.gumroad.com/l/nayab
+Gumroad: https://zulqurnain45.gumroad.com/l/nayab

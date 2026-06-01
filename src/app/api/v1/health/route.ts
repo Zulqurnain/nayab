@@ -1,13 +1,12 @@
 /**
  * Layer 5 & 13: /api/v1/health — subsystem checks
- * Returns { status: ok|degraded|down, subsystems: {db, offllama, disk} }
+ * Returns { status: ok|degraded|down, subsystems: {db, llmizeoff, disk} }
  */
 import { NextResponse } from "next/server";
 import { checkDb } from "@/lib/db";
 import { execSync } from "child_process";
 
 export const runtime = "nodejs";
-// No caching — health checks must always be fresh
 export const dynamic = "force-dynamic";
 
 interface SubsystemStatus {
@@ -16,8 +15,8 @@ interface SubsystemStatus {
   detail?: string;
 }
 
-async function checkOffllama(): Promise<SubsystemStatus> {
-  const url = process.env.OFFLLAMA_URL ?? "http://127.0.0.1:8080";
+async function checkLlmizeOff(): Promise<SubsystemStatus> {
+  const url = process.env.LLMIZEOFF_URL ?? process.env.OFFLLAMA_URL ?? "http://127.0.0.1:8080";
   const start = Date.now();
   try {
     const res = await fetch(`${url}/health`, {
@@ -67,15 +66,15 @@ function checkDbSubsystem(): SubsystemStatus {
 }
 
 export async function GET() {
-  const [offllamaStatus, diskStatus] = await Promise.all([
-    checkOffllama(),
+  const [llmizeoffStatus, diskStatus] = await Promise.all([
+    checkLlmizeOff(),
     Promise.resolve(checkDisk()),
   ]);
   const dbStatus = checkDbSubsystem();
 
   const subsystems = {
     db: dbStatus,
-    offllama: offllamaStatus,
+    llmizeoff: llmizeoffStatus,
     disk: diskStatus,
   };
 

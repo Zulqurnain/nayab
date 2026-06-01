@@ -1,6 +1,5 @@
 /**
  * Layer 5: /api/health — direct health check (not proxied)
- * Same logic as /api/v1/health but without self-referencing proxy.
  */
 import { NextResponse } from "next/server";
 import { checkDb } from "@/lib/db";
@@ -9,13 +8,11 @@ import { execSync } from "child_process";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-async function checkOffllama() {
-  const url = process.env.OFFLLAMA_URL ?? "http://127.0.0.1:8080";
+async function checkLlmizeOff() {
+  const url = process.env.LLMIZEOFF_URL ?? process.env.OFFLLAMA_URL ?? "http://127.0.0.1:8080";
   const start = Date.now();
   try {
-    const res = await fetch(`${url}/health`, {
-      signal: AbortSignal.timeout(3_000),
-    });
+    const res = await fetch(`${url}/health`, { signal: AbortSignal.timeout(3_000) });
     const latencyMs = Date.now() - start;
     if (res.ok) return { status: "ok" as const, latencyMs };
     return { status: "degraded" as const, latencyMs, detail: `HTTP ${res.status}` };
@@ -49,27 +46,21 @@ function checkDbSubsystem() {
       ? { status: "ok" as const, latencyMs: Date.now() - start }
       : { status: "down" as const, detail: "query failed" };
   } catch (err) {
-    return {
-      status: "down" as const,
-      detail: err instanceof Error ? err.message : "error",
-    };
+    return { status: "down" as const, detail: err instanceof Error ? err.message : "error" };
   }
 }
 
 export async function GET() {
-  const [offllamaStatus, diskStatus] = await Promise.all([
-    checkOffllama(),
+  const [llmizeoffStatus, diskStatus] = await Promise.all([
+    checkLlmizeOff(),
     Promise.resolve(checkDisk()),
   ]);
   const dbStatus = checkDbSubsystem();
 
-  const subsystems = { db: dbStatus, offllama: offllamaStatus, disk: diskStatus };
+  const subsystems = { db: dbStatus, llmizeoff: llmizeoffStatus, disk: diskStatus };
   const statuses = Object.values(subsystems).map((s) => s.status);
-  const overallStatus = statuses.includes("down")
-    ? "down"
-    : statuses.includes("degraded")
-    ? "degraded"
-    : "ok";
+  const overallStatus = statuses.includes("down") ? "down"
+    : statuses.includes("degraded") ? "degraded" : "ok";
 
   return NextResponse.json(
     { status: overallStatus, subsystems, ts: new Date().toISOString(), version: process.env.npm_package_version ?? "1.0.0" },

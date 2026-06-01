@@ -1,8 +1,9 @@
-# Nayab — Free AI Chat
+# Nayab — Live Demo of llmizeOFF
 
-Privacy-first AI assistant powered by offLLama (self-hosted). No sign-up, no data retention.
+Privacy-first AI assistant and the hosted demo of llmizeOFF, a self-hosted LLM runtime. 4 free prompts, no sign-up; unlimited with a free account.
 
-**URL:** https://chat.zulqurnainj.com
+**URL:** https://zulqurnainj.com/chat
+**llmizeOFF:** https://github.com/Zulqurnain/offllama
 
 ## Features
 
@@ -14,7 +15,7 @@ Privacy-first AI assistant powered by offLLama (self-hosted). No sign-up, no dat
 
 ## Plans
 
-- Free: offLLama self-hosted model
-- Paid ($10/month): 5 model choices, priority inference
+- Free: llmizeOFF self-hosted model (Qwen 2.5) + Groq Llama 3.1
+- Paid ($10 one-time): GPT-4o, GPT-4o Mini, Claude Sonnet, Claude Haiku
 
-[Start chatting →](https://chat.zulqurnainj.com)
+[Start chatting →](https://zulqurnainj.com/chat)

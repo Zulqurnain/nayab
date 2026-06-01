@@ -3,7 +3,7 @@ import { Nav } from "@/components/Nav";
 
 export const metadata = {
   title: "Nayab Pricing — Free & Pro Plans",
-  description: "Start free with offLLama. Upgrade for GPT-4o, Claude Sonnet, and more.",
+  description: "Start free with llmizeOFF. Upgrade for GPT-4o, Claude Sonnet, and more.",
 };
 
 function Check({ included }: { included: boolean }) {
@@ -22,7 +22,7 @@ function Check({ included }: { included: boolean }) {
 }
 
 const FREE_FEATURES = [
-  { text: "Qwen 2.5 via offLLama (self-hosted)", included: true },
+  { text: "Qwen 2.5 via llmizeOFF (self-hosted)", included: true },
   { text: "File uploads: PDF, TXT, RTF, PNG, JPG up to 1 MB", included: true },
   { text: "DuckDuckGo web search", included: true },
   { text: "Browser-native text-to-speech", included: true },
@@ -38,7 +38,7 @@ const PRO_FEATURES = [
   { text: "GPT-4o Mini (OpenAI)", included: true },
   { text: "Claude 3.5 Sonnet (Anthropic)", included: true },
   { text: "Claude 3 Haiku (Anthropic)", included: true },
-  { text: "Qwen 2.5 via offLLama", included: true },
+  { text: "Qwen 2.5 via llmizeOFF", included: true },
   { text: "Approximately 300 messages per day", included: true },
   { text: "Priority inference", included: true },
 ];
@@ -47,11 +47,11 @@ const FAQ = [
   // Privacy & Data
   {
     q: "Do you store my conversations?",
-    a: "No. Nayab stores nothing. The free tier runs on offLLama — inference happens on the server and the result is streamed back, but nothing is written to disk. The paid tier routes through OpenAI or Anthropic APIs under your implicit agreement with them, but Nayab itself never logs, stores, or analyses your messages.",
+    a: "No. Nayab stores nothing. The free tier runs on llmizeOFF — inference happens on the server and the result is streamed back, but nothing is written to disk. The paid tier routes through OpenAI or Anthropic APIs under your implicit agreement with them, but Nayab itself never logs, stores, or analyses your messages.",
   },
   {
     q: "Can Nayab see what I'm typing?",
-    a: "Free tier messages are processed by our self-hosted offLLama server (Qwen 2.5) and never leave that server in a readable form. Pro tier messages are forwarded to OpenAI or Anthropic's APIs — the same path as using ChatGPT or Claude directly. We never read or log those payloads.",
+    a: "Free tier messages are processed by our self-hosted llmizeOFF server (Qwen 2.5) and never leave that server in a readable form. Pro tier messages are forwarded to OpenAI or Anthropic's APIs — the same path as using ChatGPT or Claude directly. We never read or log those payloads.",
   },
   {
     q: "Is Nayab private compared to ChatGPT?",
@@ -119,12 +119,12 @@ const FAQ = [
   },
   // Technical
   {
-    q: "What is offLLama and why does it matter?",
-    a: "offLLama is an open-source library built by Zulqurnain Haider that wraps llama.cpp to run LLMs on standard shared hosting and VPS servers without a GPU. It's what makes the free tier possible — instead of paying OpenAI per token, the model runs on our own server. Source: github.com/Zulqurnain/offllama.",
+    q: "What is llmizeOFF and why does it matter?",
+    a: "llmizeOFF is an open-source library built by Zulqurnain Haider that wraps llama.cpp to run LLMs on standard shared hosting and VPS servers without a GPU. It's what makes the free tier possible — instead of paying OpenAI per token, the model runs on our own server. Source: github.com/Zulqurnain/offllama.",
   },
   {
     q: "Does Nayab have an API I can use in my own apps?",
-    a: "Not yet. Nayab is a consumer chat interface, not an API service. For programmatic LLM access, check out the offLLama library directly or use OpenAI/Anthropic APIs.",
+    a: "Not yet. Nayab is a consumer chat interface, not an API service. For programmatic LLM access, check out the llmizeOFF library directly or use OpenAI/Anthropic APIs.",
   },
   {
     q: "Will there be more features — file uploads, voice, image generation?",
