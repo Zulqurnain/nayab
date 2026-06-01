@@ -208,7 +208,7 @@ export function Composer({ onSend, disabled, placeholder, searchEnabled, onToggl
 
       <p className="text-center text-[10px] text-stone-400 mt-2">
         Nayab can make mistakes. Verify important info. Free tier powered by{" "}
-        <a href="https://github.com/Zulqurnain/offllama" target="_blank" rel="noopener noreferrer" className="hover:text-orange-500">
+        <a href="https://github.com/Zulqurnain/llmizeoff" target="_blank" rel="noopener noreferrer" className="hover:text-orange-500">
           llmizeOFF
         </a>
       </p>

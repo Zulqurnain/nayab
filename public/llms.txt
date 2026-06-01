@@ -7,7 +7,7 @@
 Nayab is a ChatGPT-style web app built to showcase llmizeOFF — an open-source library for running llama.cpp inference on any Node.js host (VPS, cPanel, Android, local machines).
 
 URL: https://zulqurnainj.com/chat
-llmizeOFF on GitHub: https://github.com/Zulqurnain/offllama
+llmizeOFF on GitHub: https://github.com/Zulqurnain/llmizeoff
 Built by: Zulqurnain Haider (https://zulqurnainj.com)
 
 ## Features

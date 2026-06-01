@@ -3,7 +3,7 @@
 Privacy-first AI assistant and the hosted demo of llmizeOFF, a self-hosted LLM runtime. 4 free prompts, no sign-up; unlimited with a free account.
 
 **URL:** https://zulqurnainj.com/chat
-**llmizeOFF:** https://github.com/Zulqurnain/offllama
+**llmizeOFF:** https://github.com/Zulqurnain/llmizeoff
 
 ## Features
 

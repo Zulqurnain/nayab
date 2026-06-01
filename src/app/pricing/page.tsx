@@ -120,7 +120,7 @@ const FAQ = [
   // Technical
   {
     q: "What is llmizeOFF and why does it matter?",
-    a: "llmizeOFF is an open-source library built by Zulqurnain Haider that wraps llama.cpp to run LLMs on standard shared hosting and VPS servers without a GPU. It's what makes the free tier possible — instead of paying OpenAI per token, the model runs on our own server. Source: github.com/Zulqurnain/offllama.",
+    a: "llmizeOFF is an open-source library built by Zulqurnain Haider that wraps llama.cpp to run LLMs on standard shared hosting and VPS servers without a GPU. It's what makes the free tier possible — instead of paying OpenAI per token, the model runs on our own server. Source: github.com/Zulqurnain/llmizeoff.",
   },
   {
     q: "Does Nayab have an API I can use in my own apps?",

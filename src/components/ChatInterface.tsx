@@ -278,7 +278,7 @@ export function ChatInterface() {
             </div>
             <p className="text-[11px] text-stone-400 mt-5 leading-relaxed">
               Nayab is the online demo for{" "}
-              <a href="https://github.com/Zulqurnain/offllama" target="_blank" rel="noopener noreferrer" className="underline hover:text-orange-500">llmizeOFF</a>
+              <a href="https://github.com/Zulqurnain/llmizeoff" target="_blank" rel="noopener noreferrer" className="underline hover:text-orange-500">llmizeOFF</a>
               {" "}— a self-hosted LLM runtime. Free forever on your own server.
             </p>
           </div>
@@ -370,7 +370,7 @@ export function ChatInterface() {
               <h2 className="text-3xl font-bold text-stone-900 mb-2 text-center">Nayab</h2>
               <p className="text-stone-500 text-center max-w-xs mb-2 text-sm leading-relaxed">
                 Online demo for{" "}
-                <a href="https://github.com/Zulqurnain/offllama" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline font-medium">
+                <a href="https://github.com/Zulqurnain/llmizeoff" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline font-medium">
                   llmizeOFF
                 </a>
                 {" "}— a self-hosted LLM runtime. Private, no data retention.
