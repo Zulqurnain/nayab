@@ -13,6 +13,13 @@ export const authOptions: NextAuthOptions = {
           GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            // Explicitly set redirect_uri so basePath doesn't cause a mismatch.
+            // Must match exactly what is registered in Google Cloud Console.
+            authorization: {
+              params: {
+                redirect_uri: "https://zulqurnainj.com/chat/api/auth/callback/google",
+              },
+            },
           }),
         ]
       : []),
