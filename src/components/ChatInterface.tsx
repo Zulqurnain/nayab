@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
+import Link from "next/link";
 import { Composer } from "./Composer";
 import { ChatMessageComponent } from "./ChatMessage";
 import { ModelPicker } from "./ModelPicker";
@@ -226,18 +227,35 @@ export function ChatInterface() {
       <div className="flex flex-col h-full">
         {/* Header */}
         <header className="shrink-0 border-b border-stone-200 bg-white/90 backdrop-blur-sm z-10">
-          <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+            {/* Logo */}
+            <div className="flex items-center gap-2 shrink-0">
               <div className="size-8 rounded-xl bg-orange-500 flex items-center justify-center">
                 <SparklesIcon className="size-4 text-white" />
               </div>
-              <div>
-                <h1 className="font-bold text-stone-900 text-sm leading-tight">Nayab</h1>
-                <a href="/llms.txt" className="text-[10px] text-stone-400 leading-none hover:text-orange-500">Powered by offLLama</a>
-              </div>
+              <span className="font-bold text-stone-900 text-sm">Nayab</span>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Nav links */}
+            <nav className="hidden sm:flex items-center gap-1">
+              <Link href="/pricing" className="text-sm px-3 py-1.5 rounded-lg font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors">Pricing</Link>
+              {session?.user ? (
+                <>
+                  <Link href="/dashboard" className="text-sm px-3 py-1.5 rounded-lg font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors">Dashboard</Link>
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="text-sm px-3 py-1.5 rounded-lg font-medium text-stone-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <Link href="/auth/login" className="text-sm px-3 py-1.5 rounded-lg font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors">Sign in</Link>
+              )}
+            </nav>
+
+            {/* Right controls */}
+            <div className="flex items-center gap-2 shrink-0">
               <ModelPicker
                 value={model}
                 onChange={setModel}
