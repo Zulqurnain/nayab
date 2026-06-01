@@ -75,7 +75,7 @@ async function callOffllama(
       "Content-Type": "application/json",
       ...(OFFLLAMA_KEY ? { Authorization: `Bearer ${OFFLLAMA_KEY}` } : {}),
     },
-    body: JSON.stringify({ model: "local", messages, max_tokens: 300, temperature: 0.7 }),
+    body: JSON.stringify({ model: "local", messages, max_tokens: 200, temperature: 0.7 }),
     signal,
   });
   if (!res.ok) {
