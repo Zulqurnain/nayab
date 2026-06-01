@@ -17,6 +17,7 @@ const OFFLLAMA_URL = process.env.OFFLLAMA_URL ?? "http://127.0.0.1:8080";
 const OFFLLAMA_KEY = process.env.OFFLLAMA_API_KEY ?? "";
 const OPENAI_KEY = process.env.OPENAI_API_KEY ?? "";
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY ?? "";
+const GROQ_KEY = process.env.GROQ_API_KEY ?? "";
 
 // ─── Zod schema ─────────────────────────────────────────────────────────────
 
@@ -27,7 +28,7 @@ const MessageSchema = z.object({
 
 const ChatRequestSchema = z.object({
   messages: z.array(MessageSchema).min(1).max(50),
-  model: z.enum(["offllama", "gpt-4o-mini", "claude-haiku", "gpt-4o", "claude-sonnet"]),
+  model: z.enum(["offllama", "groq-llama", "gpt-4o-mini", "claude-haiku", "gpt-4o", "claude-sonnet"]),
   searchEnabled: z.boolean().optional(),
   searchQuery: z.string().max(500).optional(),
 });
@@ -180,6 +181,49 @@ async function streamAnthropic(
   }
 }
 
+// Groq — free OpenAI-compatible API, sub-1-second first token via LPU chips
+async function streamGroq(
+  messages: z.infer<typeof MessageSchema>[],
+  ctrl: ReadableStreamDefaultController,
+  signal: AbortSignal
+) {
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${GROQ_KEY}` },
+    body: JSON.stringify({
+      model: "llama-3.1-8b-instant",
+      messages,
+      stream: true,
+      max_tokens: 1024,
+      temperature: 0.7,
+    }),
+    signal,
+  });
+  if (!res.ok) {
+    const err = await res.text().catch(() => res.statusText);
+    throw new Error(`Groq error ${res.status}: ${err}`);
+  }
+  const reader = res.body!.getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const lines = buf.split("\n");
+    buf = lines.pop() ?? "";
+    for (const line of lines) {
+      const t = line.replace(/^data: /, "").trim();
+      if (!t || t === "[DONE]") continue;
+      try {
+        const c = JSON.parse(t);
+        const text = c.choices?.[0]?.delta?.content;
+        if (text) ctrl.enqueue(sseChunk(text));
+      } catch { /* ignore */ }
+    }
+  }
+}
+
 const OPENAI_MODEL_MAP: Record<string, string> = {
   "gpt-4o-mini": "gpt-4o-mini",
   "gpt-4o": "gpt-4o",
@@ -235,8 +279,8 @@ export async function POST(req: NextRequest) {
 
   const { messages, model, searchEnabled, searchQuery } = parsed.data;
 
-  // Verify paid license for paid models
-  const isPaidModel = model !== "offllama";
+  // Verify paid license for paid models (groq-llama is free)
+  const isPaidModel = model !== "offllama" && model !== "groq-llama";
   if (isPaidModel) {
     const license = req.headers.get("x-license-key");
     const hasPaidSession = sessionUser?.plan === "paid";
@@ -283,6 +327,9 @@ export async function POST(req: NextRequest) {
       try {
         if (model === "offllama") {
           tokenEstimate = await streamOffllama(finalMessages, controller, signal);
+        } else if (model === "groq-llama") {
+          if (!GROQ_KEY) throw new Error("Groq not configured on this server. Add GROQ_API_KEY to .env.local");
+          await streamGroq(finalMessages, controller, signal);
         } else if (model in OPENAI_MODEL_MAP) {
           if (!OPENAI_KEY) throw new Error("OpenAI not configured on this server.");
           await streamOpenAI(finalMessages, OPENAI_MODEL_MAP[model as ModelId], controller, signal);

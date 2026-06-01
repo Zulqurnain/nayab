@@ -17,9 +17,10 @@ export interface Attachment {
 
 export type ModelId =
   | "offllama"       // free — self-hosted
-  | "gpt-4o-mini"   // paid — OpenAI
-  | "claude-haiku"  // paid — Anthropic
-  | "gpt-4o"        // paid — OpenAI
+  | "groq-llama"     // free — Groq cloud (sub-1s)
+  | "gpt-4o-mini"    // paid — OpenAI
+  | "claude-haiku"   // paid — Anthropic
+  | "gpt-4o"         // paid — OpenAI
   | "claude-sonnet"; // paid — Anthropic
 
 export interface Model {
@@ -36,7 +37,14 @@ export const MODELS: Model[] = [
     name: "Qwen 2.5 (offLLama)",
     provider: "Self-hosted",
     tier: "free",
-    description: "Fast local model — free, private, no cloud",
+    description: "Private local model — no cloud, no data sent",
+  },
+  {
+    id: "groq-llama",
+    name: "Llama 3.1 8B (Groq)",
+    provider: "Groq",
+    tier: "free",
+    description: "Free cloud model — sub-1-second responses",
   },
   {
     id: "gpt-4o-mini",
