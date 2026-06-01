@@ -1,27 +1,45 @@
+/**
+ * Layer 2: License verification with Zod validation and standardised errors.
+ */
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { Errors } from "@/lib/errors";
+import { logRequest } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
 const GUMROAD_PRODUCT_ID = process.env.GUMROAD_PRODUCT_ID ?? "";
 
+const VerifySchema = z.object({
+  licenseKey: z.string().min(8).max(128),
+});
+
 export async function POST(req: NextRequest) {
-  let body: { licenseKey?: string };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ valid: false, error: "Invalid request" }, { status: 400 });
-  }
-
-  const { licenseKey } = body;
-  if (!licenseKey || typeof licenseKey !== "string" || licenseKey.trim().length < 8) {
-    return NextResponse.json({ valid: false, error: "License key required" }, { status: 400 });
-  }
-
-  if (!GUMROAD_PRODUCT_ID) {
-    return NextResponse.json({ valid: false, error: "License verification not configured" }, { status: 503 });
-  }
+  const start = Date.now();
+  let statusCode = 200;
 
   try {
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      statusCode = 400;
+      return Errors.badRequest("Invalid JSON");
+    }
+
+    const parsed = VerifySchema.safeParse(body);
+    if (!parsed.success) {
+      statusCode = 400;
+      return Errors.badRequest("License key required (min 8 characters)");
+    }
+
+    const { licenseKey } = parsed.data;
+
+    if (!GUMROAD_PRODUCT_ID) {
+      statusCode = 503;
+      return Errors.serviceUnavailable("License verification not configured");
+    }
+
     const form = new URLSearchParams({
       product_id: GUMROAD_PRODUCT_ID,
       license_key: licenseKey.trim(),
@@ -37,16 +55,29 @@ export async function POST(req: NextRequest) {
     const data = await res.json();
 
     if (data.success) {
+      statusCode = 200;
       return NextResponse.json({
         valid: true,
         email: data.purchase?.email ?? "",
         createdAt: data.purchase?.created_at ?? "",
       });
     } else {
-      return NextResponse.json({ valid: false, error: data.message ?? "Invalid license" });
+      statusCode = 200;
+      return NextResponse.json({
+        valid: false,
+        error: { code: "INVALID_LICENSE", message: data.message ?? "Invalid license" },
+      });
     }
   } catch (err) {
-    console.error("[verify-license]", err instanceof Error ? err.message : err);
-    return NextResponse.json({ valid: false, error: "Verification failed. Try again." }, { status: 500 });
+    statusCode = 500;
+    return Errors.internal("Verification failed. Try again.");
+  } finally {
+    logRequest({
+      method: "POST",
+      path: "/api/verify-license",
+      statusCode,
+      latencyMs: Date.now() - start,
+      ip: req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown",
+    });
   }
 }
