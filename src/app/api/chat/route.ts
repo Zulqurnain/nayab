@@ -72,7 +72,7 @@ async function streamLlmizeOff(
       "Content-Type": "application/json",
       ...(LLMIZEOFF_KEY ? { Authorization: `Bearer ${LLMIZEOFF_KEY}` } : {}),
     },
-    body: JSON.stringify({ model: "local", messages, max_tokens: 200, temperature: 0.7, stream: true }),
+    body: JSON.stringify({ model: "local", messages, max_tokens: 160, temperature: 0.7, stream: true }),
     signal,
   });
   if (!res.ok) {

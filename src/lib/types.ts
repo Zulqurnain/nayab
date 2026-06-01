@@ -34,10 +34,10 @@ export interface Model {
 export const MODELS: Model[] = [
   {
     id: "llmizeoff",
-    name: "Gemma 2 2B (llmizeOFF)",
+    name: "Llama 3.2 1B (llmizeOFF)",
     provider: "llmizeOFF · Self-hosted",
     tier: "free",
-    description: "Private local inference — Google Gemma 2, no cloud, no data sent anywhere",
+    description: "Private local inference — Meta Llama 3.2, no cloud, no data sent anywhere",
   },
   {
     id: "groq-llama",

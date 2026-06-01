@@ -1,6 +1,6 @@
 # Nayab — Live Demo of llmizeOFF
 
-> Nayab is the hosted demo of llmizeOFF, a self-hosted LLM runtime. Free tier runs Gemma 2 2B on a private server. Paid plan unlocks GPT-4o and Claude Sonnet.
+> Nayab is the hosted demo of llmizeOFF, a self-hosted LLM runtime. Free tier runs Llama 3.2 1B on a private server. Paid plan unlocks GPT-4o and Claude Sonnet.
 
 ## About
 
@@ -22,14 +22,14 @@ Built by: Zulqurnain Haider (https://zulqurnainj.com)
 
 ## Models
 
-Free: Self-hosted llmizeOFF runtime (Gemma 2 2B)
+Free: Self-hosted llmizeOFF runtime (Llama 3.2 1B)
 Free: Groq Llama 3.1 8B (cloud, sub-1-second)
 Paid: GPT-4o, GPT-4o Mini (OpenAI)
 Paid: Claude 3.5 Sonnet, Claude 3 Haiku (Anthropic)
 
 ## Plans
 
-Free: Self-hosted llmizeOFF model (Gemma 2 2B) — unlimited with free account
+Free: Self-hosted llmizeOFF model (Llama 3.2 1B) — unlimited with free account
 Paid: $10 one-time via Gumroad — unlocks GPT-4o, Claude, and other models
 
 ## Support
