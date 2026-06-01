@@ -57,33 +57,46 @@ function errResponse(code: string, message: string, status: number, retryAfter?:
   return new Response(JSON.stringify({ error: { code, message } }), { status, headers });
 }
 
-async function pseudoStream(text: string, ctrl: ReadableStreamDefaultController) {
-  for (const chunk of text.split(/(\s+)/)) {
-    if (!chunk) continue;
-    ctrl.enqueue(sseChunk(chunk));
-    await new Promise((r) => setTimeout(r, 20));
-  }
-}
-
-async function callOffllama(
+// Real token streaming from offLLama — first token appears in ~2-3s instead of 15-25s
+async function streamOffllama(
   messages: z.infer<typeof MessageSchema>[],
+  ctrl: ReadableStreamDefaultController,
   signal: AbortSignal
-): Promise<string> {
+): Promise<number> {
   const res = await fetch(`${OFFLLAMA_URL}/v1/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       ...(OFFLLAMA_KEY ? { Authorization: `Bearer ${OFFLLAMA_KEY}` } : {}),
     },
-    body: JSON.stringify({ model: "local", messages, max_tokens: 200, temperature: 0.7 }),
+    body: JSON.stringify({ model: "local", messages, max_tokens: 200, temperature: 0.7, stream: true }),
     signal,
   });
   if (!res.ok) {
     const err = await res.text().catch(() => res.statusText);
     throw new Error(`offLLama error ${res.status}: ${err}`);
   }
-  const json = await res.json();
-  return (json.choices?.[0]?.message?.content as string) ?? "";
+  const reader = res.body!.getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+  let tokens = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const lines = buf.split("\n");
+    buf = lines.pop() ?? "";
+    for (const line of lines) {
+      const t = line.replace(/^data: /, "").trim();
+      if (!t || t === "[DONE]") continue;
+      try {
+        const c = JSON.parse(t);
+        const text = c.choices?.[0]?.delta?.content;
+        if (text) { ctrl.enqueue(sseChunk(text)); tokens++; }
+      } catch { /* ignore malformed SSE */ }
+    }
+  }
+  return tokens;
 }
 
 async function streamOpenAI(
@@ -269,9 +282,7 @@ export async function POST(req: NextRequest) {
     async start(controller) {
       try {
         if (model === "offllama") {
-          const text = await callOffllama(finalMessages, signal);
-          tokenEstimate = Math.ceil(text.length / 4);
-          await pseudoStream(text, controller);
+          tokenEstimate = await streamOffllama(finalMessages, controller, signal);
         } else if (model in OPENAI_MODEL_MAP) {
           if (!OPENAI_KEY) throw new Error("OpenAI not configured on this server.");
           await streamOpenAI(finalMessages, OPENAI_MODEL_MAP[model as ModelId], controller, signal);
