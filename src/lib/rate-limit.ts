@@ -20,12 +20,12 @@ export interface RateLimitResult {
 }
 
 /**
- * Token-bucket-style: 1 request per 5 seconds per IP.
- * Also enforces a secondary window: max 20 requests per minute per IP.
+ * Rate limiting: max 20 requests per minute per IP.
+ * No per-request cooldown — users can send a new message as soon as the
+ * previous response is done. The per-minute cap prevents bulk abuse.
  */
 export function checkRateLimit(ip: string): RateLimitResult {
   const now = Date.now();
-  const COOLDOWN = 5_000;   // 5 s between requests
   const WINDOW = 60_000;    // 1-minute window
   const MAX_PER_WINDOW = 20;
 
@@ -46,12 +46,6 @@ export function checkRateLimit(ip: string): RateLimitResult {
   if (entry.count >= MAX_PER_WINDOW) {
     const retryAfterMs = WINDOW - (now - entry.windowStart);
     return { allowed: false, retryAfterMs };
-  }
-
-  // Check cooldown
-  const elapsed = now - entry.lastRequest;
-  if (elapsed < COOLDOWN) {
-    return { allowed: false, retryAfterMs: COOLDOWN - elapsed };
   }
 
   entry.lastRequest = now;

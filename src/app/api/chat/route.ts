@@ -57,7 +57,7 @@ async function callOffllama(
     body: JSON.stringify({
       model: "local",
       messages,
-      max_tokens: 1024,
+      max_tokens: 300,
       temperature: 0.7,
     }),
     signal,
