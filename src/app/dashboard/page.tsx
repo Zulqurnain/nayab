@@ -80,7 +80,7 @@ export default async function DashboardPage() {
           <span className={`px-3 py-1.5 rounded-full text-sm font-semibold ${
             isPro ? "bg-orange-100 text-orange-700" : "bg-stone-100 text-stone-600"
           }`}>
-            {isPro ? "✦ Pro" : "Free"}
+            {isPro ? "Pro" : "Free"}
           </span>
         </div>
 
@@ -112,7 +112,11 @@ export default async function DashboardPage() {
                 <h2 className="text-xl font-bold text-white mb-1">Nayab Pro Plan</h2>
                 <p className="text-stone-400 text-sm">Full access to GPT-4o, Claude Sonnet, and all premium models.</p>
               </div>
-              <div className="text-3xl">✦</div>
+              <div className="text-3xl text-orange-400">
+                <svg className="size-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                </svg>
+              </div>
             </div>
             <div className="relative mt-4 pt-4 border-t border-stone-700 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
               {["GPT-4o", "GPT-4o Mini", "Claude 3.5 Sonnet", "Claude 3 Haiku"].map((m) => (

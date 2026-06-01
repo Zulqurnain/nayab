@@ -63,16 +63,16 @@ export function Nav() {
                     <div className="px-4 py-3 border-b border-stone-100">
                       <p className="text-xs text-stone-400 truncate">{user.email}</p>
                       <p className={`text-xs font-semibold mt-0.5 ${isPro ? "text-orange-600" : "text-stone-500"}`}>
-                        {isPro ? "✦ Pro Plan" : "Free Plan"}
+                        {isPro ? "Pro Plan" : "Free Plan"}
                       </p>
                     </div>
                     <div className="py-1">
-                      <MenuItem href="/chat" onClick={() => setMenuOpen(false)}>💬 Chat</MenuItem>
-                      <MenuItem href="/dashboard" onClick={() => setMenuOpen(false)}>📊 Dashboard</MenuItem>
-                      <MenuItem href="/settings" onClick={() => setMenuOpen(false)}>⚙️ Settings</MenuItem>
+                      <MenuItem href="/chat" onClick={() => setMenuOpen(false)}>Chat</MenuItem>
+                      <MenuItem href="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</MenuItem>
+                      <MenuItem href="/settings" onClick={() => setMenuOpen(false)}>Settings</MenuItem>
                       {!isPro && (
                         <MenuItem href="/pricing" onClick={() => setMenuOpen(false)} highlight>
-                          ✦ Upgrade to Pro
+                          Upgrade to Pro
                         </MenuItem>
                       )}
                     </div>

@@ -9,13 +9,12 @@ import type { NextRequest } from "next/server";
 export default withAuth(
   function middleware(req: NextRequest) {
     const res = NextResponse.next();
-    const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
 
     // Layer 8: Security headers
-    // Content-Security-Policy
+    // Content-Security-Policy — 'self' + 'unsafe-inline' required for Next.js inline hydration scripts
     const csp = [
       `default-src 'self'`,
-      `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+      `script-src 'self' 'unsafe-inline'`,
       `style-src 'self' 'unsafe-inline'`,
       `img-src 'self' data: https:`,
       `font-src 'self'`,
@@ -26,7 +25,6 @@ export default withAuth(
     ].join("; ");
 
     res.headers.set("Content-Security-Policy", csp);
-    res.headers.set("X-Nonce", nonce);
     res.headers.set("X-Frame-Options", "DENY");
     res.headers.set("X-Content-Type-Options", "nosniff");
     res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
