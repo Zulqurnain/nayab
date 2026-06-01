@@ -302,6 +302,7 @@ export function ChatInterface() {
 
             {/* Nav links */}
             <nav className="hidden sm:flex items-center gap-1">
+              <Link href="/about" className="text-sm px-3 py-1.5 rounded-lg font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors">About</Link>
               <Link href="/pricing" className="text-sm px-3 py-1.5 rounded-lg font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors">Pricing</Link>
               {session?.user ? (
                 <>

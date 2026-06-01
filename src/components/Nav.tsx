@@ -27,6 +27,7 @@ export function Nav() {
         {/* Nav links */}
         <nav className="hidden sm:flex items-center gap-1">
           <NavLink href="/" active={path === "/"}>Chat</NavLink>
+          <NavLink href="/about" active={path === "/about"}>About</NavLink>
           <NavLink href="/pricing" active={path === "/pricing"}>Pricing</NavLink>
           {user && <NavLink href="/dashboard" active={path === "/dashboard"}>Dashboard</NavLink>}
         </nav>
