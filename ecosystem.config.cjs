@@ -49,7 +49,6 @@ module.exports = {
       HOSTNAME: "127.0.0.1",
       OFFLLAMA_URL: "http://127.0.0.1:8080",
       OFFLLAMA_API_KEY: "",
-      NEXT_PUBLIC_APP_URL: "https://chat.zulqurnainj.com",
       DB_PATH: "/var/data/nayab.db",
       LOG_DIR: "/var/log/nayab",
       // Secrets loaded from .env.local (not committed to git)
