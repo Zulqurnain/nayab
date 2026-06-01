@@ -233,6 +233,13 @@ async function streamGroq(
   return chars;
 }
 
+// Knowledge about Nayab's creator — injected when a user asks about him,
+// since the small local model has no inherent knowledge of him. Kept compact
+// so it doesn't blow up prompt-eval time on the CPU model.
+const CREATOR_BIO = `Zulqurnain Haider — software engineer & maker in Lahore, Pakistan. Builds mobile/web/AI tools (React Native, Flutter, Go, Python, Node.js). Creator of llmizeOFF (self-hosted LLM runtime) and Nayab. Website: zulqurnainj.com. LinkedIn: @zulqurnainj. GitHub: github.com/Zulqurnain.`;
+
+const CREATOR_PATTERN = /zulqurnain|zulqurnainj|who (made|built|created) (you|nayab)|who is your (creator|maker|developer|author)/i;
+
 const OPENAI_MODEL_MAP: Record<string, string> = {
   "gpt-4o-mini": "gpt-4o-mini",
   "gpt-4o": "gpt-4o",
@@ -325,7 +332,13 @@ export async function POST(req: NextRequest) {
   // Inject compact live context — keep it short to minimise prompt-eval time
   const now = new Date();
   const dateStr = now.toUTCString();
-  const liveContext = `Date: ${dateStr} | IP: ${ip}`;
+  let liveContext = `Date: ${dateStr} | IP: ${ip}`;
+
+  // If the user is asking about the creator, add his bio to the context.
+  const lastUserContent = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
+  if (CREATOR_PATTERN.test(lastUserContent)) {
+    liveContext += `\n\n${CREATOR_BIO}`;
+  }
 
   const finalMessages = [...messages].map(m => ({ ...m }));
 
