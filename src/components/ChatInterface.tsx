@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { Composer } from "./Composer";
 import { ChatMessageComponent } from "./ChatMessage";
 import { ModelPicker } from "./ModelPicker";
@@ -34,6 +35,7 @@ function clearLicense() {
 }
 
 export function ChatInterface() {
+  const { data: session } = useSession();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [model, setModel] = useState<ModelId>("offllama");
   const [license, setLicense] = useState<LicenseState | null>(null);
@@ -54,7 +56,9 @@ export function ChatInterface() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const isPaid = license?.isValid ?? false;
+  // isPaid: true if session plan is "paid" OR if a valid localStorage license exists
+  const sessionPlan = (session?.user as { plan?: string } | undefined)?.plan;
+  const isPaid = sessionPlan === "paid" || (license?.isValid ?? false);
 
   const handleVerified = useCallback((key: string) => {
     saveLicense(key);
