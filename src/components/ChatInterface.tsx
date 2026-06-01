@@ -10,7 +10,8 @@ import { SparklesIcon, TrashIcon, KeyIcon } from "./icons";
 import type { ChatMessage, ModelId, Attachment, LicenseState } from "@/lib/types";
 
 const SYSTEM_PROMPT = `You are Nayab, a demo of llmizeOFF — a self-hosted LLM runtime.
-Be helpful, accurate, and concise. Use date/IP from context when asked. No filler phrases. Markdown only for code/lists.`;
+Be helpful, accurate, and concise. Use date/IP from context when asked. No filler phrases.
+Always use Markdown. Put ANY code, commands, config, JSON, or content the user might copy inside a fenced code block with a language tag, e.g. \`\`\`python … \`\`\` or \`\`\`bash … \`\`\`. Use \`\`\`text for plain copyable text and > for quotations. Use inline \`backticks\` for short identifiers.`;
 
 function genId() {
   return Math.random().toString(36).slice(2, 10);
