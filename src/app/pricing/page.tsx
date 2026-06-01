@@ -22,7 +22,7 @@ function Check({ included }: { included: boolean }) {
 }
 
 const FREE_FEATURES = [
-  { text: "SmolLM2 via llmizeOFF (self-hosted)", included: true },
+  { text: "Gemma 2 2B via llmizeOFF (self-hosted)", included: true },
   { text: "File uploads: PDF, TXT, RTF, PNG, JPG up to 1 MB", included: true },
   { text: "DuckDuckGo web search", included: true },
   { text: "Browser-native text-to-speech", included: true },
@@ -38,7 +38,7 @@ const PRO_FEATURES = [
   { text: "GPT-4o Mini (OpenAI)", included: true },
   { text: "Claude 3.5 Sonnet (Anthropic)", included: true },
   { text: "Claude 3 Haiku (Anthropic)", included: true },
-  { text: "SmolLM2 via llmizeOFF", included: true },
+  { text: "Gemma 2 2B via llmizeOFF", included: true },
   { text: "Approximately 300 messages per day", included: true },
   { text: "Priority inference", included: true },
 ];
@@ -51,7 +51,7 @@ const FAQ = [
   },
   {
     q: "Can Nayab see what I'm typing?",
-    a: "Free tier messages are processed by our self-hosted llmizeOFF server (SmolLM2) and never leave that server in a readable form. Pro tier messages are forwarded to OpenAI or Anthropic's APIs — the same path as using ChatGPT or Claude directly. We never read or log those payloads.",
+    a: "Free tier messages are processed by our self-hosted llmizeOFF server (Gemma 2 2B) and never leave that server in a readable form. Pro tier messages are forwarded to OpenAI or Anthropic's APIs — the same path as using ChatGPT or Claude directly. We never read or log those payloads.",
   },
   {
     q: "Is Nayab private compared to ChatGPT?",
@@ -85,11 +85,11 @@ const FAQ = [
   // Model quality
   {
     q: "Which model does the free tier use?",
-    a: "SmolLM2-360M, a compact open-source model from Hugging Face, running self-hosted via llmizeOFF. It's tuned for speed — responses start streaming in a couple of seconds on CPU. Great for quick questions, drafting, and everyday chat. For heavier reasoning, switch to a Pro model.",
+    a: "Google's Gemma 2 2B (instruction-tuned), running self-hosted via llmizeOFF. It's a strong open model for its size — good at general questions, writing, and light coding. Running on CPU it streams responses in a few seconds. For the fastest possible replies, the free Groq (Llama 3.1 8B) option in the picker responds in under a second.",
   },
   {
     q: "When should I use Pro (GPT-4o / Claude) vs the free model?",
-    a: "Use the free SmolLM2 for fast drafting, brainstorming, Q&A, and summaries. Switch to GPT-4o or Claude for complex multi-step reasoning, nuanced long-form writing, or tasks where accuracy on hard questions really matters. You can switch models per conversation in-app.",
+    a: "Use the free Gemma 2 for everyday questions, drafting, brainstorming, and light coding. Switch to GPT-4o or Claude for complex multi-step reasoning, nuanced long-form writing, or tasks where accuracy on hard questions really matters. You can switch models per conversation in-app.",
   },
   {
     q: "Do AI models on Nayab hallucinate or make mistakes?",

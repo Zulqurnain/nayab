@@ -164,15 +164,15 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent pointer-events-none" />
             <div className="relative">
               <p className="text-xs font-bold text-orange-400 uppercase tracking-widest mb-3">Model recommendation</p>
-              <h3 className="text-2xl font-bold mb-3">SmolLM2-360M · Tuned for fast CPU chat</h3>
+              <h3 className="text-2xl font-bold mb-3">Gemma 2 2B · Best quality on a CPU VPS</h3>
               <p className="text-stone-400 mb-5 leading-relaxed text-sm">
-                After testing models from 0.5B to 4B on a 6-core AMD EPYC with 12GB RAM, we ship SmolLM2-360M (Hugging Face) as the default for the snappiest experience. At Q8_0 it fits in ~370MB RAM, streams the first token in ~2 seconds, and finishes most answers in 5 seconds — about 10× faster than a 1.5B model on CPU. For heavier reasoning, llmizeOFF can drop in SmolLM2-1.7B or Qwen2.5-1.5B with one config change.
+                The self-hosted free tier runs Google&apos;s Gemma 2 2B (Q4_K_M) via llmizeOFF — a strong open model that handles general questions, writing, and light coding well. On a CPU-only VPS it streams the first token in a few seconds (it&apos;s a real 2B model, not instant). When you need answers in under a second, switch the model picker to the free Groq (Llama 3.1 8B) option. llmizeOFF can also drop in smaller/faster models like SmolLM2 with one config change.
               </p>
               <div className="grid grid-cols-3 gap-4 text-center">
                 {[
-                  { label: "Model size", value: "370 MB" },
-                  { label: "First token", value: "~2 s" },
-                  { label: "Throughput", value: "10-15 tok/s" },
+                  { label: "Model size", value: "1.6 GB" },
+                  { label: "First token", value: "~4-8 s" },
+                  { label: "Quality", value: "Strong" },
                 ].map((s) => (
                   <div key={s.label} className="bg-white/5 rounded-xl p-3">
                     <p className="text-xl font-bold text-white">{s.value}</p>
