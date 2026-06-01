@@ -13,8 +13,9 @@ import type { ModelId } from "@/lib/types";
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
-const OFFLLAMA_URL = process.env.OFFLLAMA_URL ?? "http://127.0.0.1:8080";
-const OFFLLAMA_KEY = process.env.OFFLLAMA_API_KEY ?? "";
+// llmizeOFF runtime URL (self-hosted inference server)
+const LLMIZEOFF_URL = process.env.OFFLLAMA_URL ?? "http://127.0.0.1:8080";
+const LLMIZEOFF_KEY = process.env.OFFLLAMA_API_KEY ?? "";
 const OPENAI_KEY = process.env.OPENAI_API_KEY ?? "";
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY ?? "";
 const GROQ_KEY = process.env.GROQ_API_KEY ?? "";
@@ -28,7 +29,7 @@ const MessageSchema = z.object({
 
 const ChatRequestSchema = z.object({
   messages: z.array(MessageSchema).min(1).max(50),
-  model: z.enum(["offllama", "groq-llama", "gpt-4o-mini", "claude-haiku", "gpt-4o", "claude-sonnet"]),
+  model: z.enum(["llmizeoff", "groq-llama", "gpt-4o-mini", "claude-haiku", "gpt-4o", "claude-sonnet"]),
   searchEnabled: z.boolean().optional(),
   searchQuery: z.string().max(500).optional(),
 });
@@ -58,17 +59,17 @@ function errResponse(code: string, message: string, status: number, retryAfter?:
   return new Response(JSON.stringify({ error: { code, message } }), { status, headers });
 }
 
-// Real token streaming from offLLama — first token appears in ~2-3s instead of 15-25s
-async function streamOffllama(
+// Real token streaming from llmizeOFF runtime — first token appears as soon as inference starts
+async function streamLlmizeOff(
   messages: z.infer<typeof MessageSchema>[],
   ctrl: ReadableStreamDefaultController,
   signal: AbortSignal
 ): Promise<number> {
-  const res = await fetch(`${OFFLLAMA_URL}/v1/chat/completions`, {
+  const res = await fetch(`${LLMIZEOFF_URL}/v1/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(OFFLLAMA_KEY ? { Authorization: `Bearer ${OFFLLAMA_KEY}` } : {}),
+      ...(LLMIZEOFF_KEY ? { Authorization: `Bearer ${LLMIZEOFF_KEY}` } : {}),
     },
     body: JSON.stringify({ model: "local", messages, max_tokens: 200, temperature: 0.7, stream: true }),
     signal,
@@ -279,8 +280,8 @@ export async function POST(req: NextRequest) {
 
   const { messages, model, searchEnabled, searchQuery } = parsed.data;
 
-  // Verify paid license for paid models (groq-llama is free)
-  const isPaidModel = model !== "offllama" && model !== "groq-llama";
+  // Verify paid license for paid models (llmizeoff and groq-llama are free)
+  const isPaidModel = model !== "llmizeoff" && model !== "groq-llama";
   if (isPaidModel) {
     const license = req.headers.get("x-license-key");
     const hasPaidSession = sessionUser?.plan === "paid";
@@ -289,13 +290,10 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Build live context block injected into system prompt
+  // Inject compact live context — keep it short to minimise prompt-eval time
   const now = new Date();
-  const dateStr = now.toUTCString(); // e.g. "Sun, 01 Jun 2026 16:00:00 GMT"
-  const liveContext = [
-    `Current date and time: ${dateStr}`,
-    `User's IP address: ${ip}`,
-  ].join("\n");
+  const dateStr = now.toUTCString();
+  const liveContext = `Date: ${dateStr} | IP: ${ip}`;
 
   const finalMessages = [...messages].map(m => ({ ...m }));
 
@@ -325,8 +323,8 @@ export async function POST(req: NextRequest) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        if (model === "offllama") {
-          tokenEstimate = await streamOffllama(finalMessages, controller, signal);
+        if (model === "llmizeoff") {
+          tokenEstimate = await streamLlmizeOff(finalMessages, controller, signal);
         } else if (model === "groq-llama") {
           if (!GROQ_KEY) throw new Error("Groq not configured on this server. Add GROQ_API_KEY to .env.local");
           await streamGroq(finalMessages, controller, signal);

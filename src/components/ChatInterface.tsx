@@ -9,14 +9,8 @@ import { PaidModal } from "./PaidModal";
 import { SparklesIcon, TrashIcon, KeyIcon } from "./icons";
 import type { ChatMessage, ModelId, Attachment, LicenseState } from "@/lib/types";
 
-const SYSTEM_PROMPT = `You are Nayab, a helpful and accurate AI assistant powered by offLLama.
-
-Rules:
-- Be concise. Keep answers under 3 sentences unless code or lists are needed.
-- Use the date and IP from the system context when asked — never say you don't know them.
-- Answer factually. Never make up information.
-- No filler phrases ("Great question!", "Certainly!").
-- Use markdown for code blocks and lists only.`;
+const SYSTEM_PROMPT = `You are Nayab, a demo of llmizeOFF — a self-hosted LLM runtime.
+Be helpful, accurate, and concise. Use date/IP from context when asked. No filler phrases. Markdown only for code/lists.`;
 
 function genId() {
   return Math.random().toString(36).slice(2, 10);
@@ -42,12 +36,25 @@ function clearLicense() {
   localStorage.removeItem("nayab_license");
 }
 
+const ANON_PROMPT_LIMIT = 4;
+const ANON_COUNT_KEY = "nayab_anon_count";
+
+function getAnonCount(): number {
+  if (typeof window === "undefined") return 0;
+  return parseInt(localStorage.getItem(ANON_COUNT_KEY) ?? "0", 10);
+}
+function incAnonCount() {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(ANON_COUNT_KEY, String(getAnonCount() + 1));
+}
+
 export function ChatInterface() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [model, setModel] = useState<ModelId>("offllama");
+  const [model, setModel] = useState<ModelId>("llmizeoff");
   const [license, setLicense] = useState<LicenseState | null>(null);
   const [showPaidModal, setShowPaidModal] = useState(false);
+  const [showAuthWall, setShowAuthWall] = useState(false);
   const [searchEnabled, setSearchEnabled] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState("");
@@ -77,11 +84,21 @@ export function ChatInterface() {
   const handleClearLicense = useCallback(() => {
     clearLicense();
     setLicense(null);
-    setModel("offllama");
+    setModel("llmizeoff");
   }, []);
 
   async function handleSend(text: string, attachments: Attachment[], search: boolean) {
     setError("");
+
+    // 4-prompt gate for anonymous users
+    if (!session && status !== "loading") {
+      const count = getAnonCount();
+      if (count >= ANON_PROMPT_LIMIT) {
+        setShowAuthWall(true);
+        return;
+      }
+      incAnonCount();
+    }
 
     // Build content with attachment context
     let content = text;
@@ -231,6 +248,43 @@ export function ChatInterface() {
         <PaidModal onClose={() => setShowPaidModal(false)} onVerified={handleVerified} />
       )}
 
+      {/* Auth wall — shown after 4 anonymous prompts */}
+      {showAuthWall && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
+            <div className="size-14 rounded-2xl bg-orange-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-200">
+              <SparklesIcon className="size-7 text-white" />
+            </div>
+            <h2 className="text-xl font-bold text-stone-900 mb-2">Enjoying Nayab?</h2>
+            <p className="text-stone-500 text-sm mb-1">
+              You&apos;ve used your <span className="font-semibold text-stone-700">4 free prompts</span>.
+            </p>
+            <p className="text-stone-400 text-xs mb-6">
+              Sign in or create a free account to keep chatting. No credit card needed.
+            </p>
+            <div className="space-y-3">
+              <Link
+                href="/auth/login"
+                className="block w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-semibold text-sm transition-colors"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="block w-full bg-stone-100 hover:bg-stone-200 text-stone-800 py-3 rounded-xl font-semibold text-sm transition-colors"
+              >
+                Create free account
+              </Link>
+            </div>
+            <p className="text-[11px] text-stone-400 mt-5 leading-relaxed">
+              Nayab is the online demo for{" "}
+              <a href="https://github.com/Zulqurnain/offllama" target="_blank" rel="noopener noreferrer" className="underline hover:text-orange-500">llmizeOFF</a>
+              {" "}— a self-hosted LLM runtime. Free forever on your own server.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col h-full">
         {/* Header */}
         <header className="shrink-0 border-b border-stone-200 bg-white/90 backdrop-blur-sm z-10">
@@ -240,7 +294,10 @@ export function ChatInterface() {
               <div className="size-8 rounded-xl bg-orange-500 flex items-center justify-center">
                 <SparklesIcon className="size-4 text-white" />
               </div>
-              <span className="font-bold text-stone-900 text-sm">Nayab</span>
+              <div>
+                <span className="font-bold text-stone-900 text-sm">Nayab</span>
+                <span className="hidden sm:inline text-[10px] text-stone-400 ml-1.5">demo of llmizeOFF</span>
+              </div>
             </div>
 
             {/* Nav links */}
@@ -311,13 +368,18 @@ export function ChatInterface() {
                 <SparklesIcon className="size-8 text-white" />
               </div>
               <h2 className="text-3xl font-bold text-stone-900 mb-2 text-center">Nayab</h2>
-              <p className="text-stone-500 text-center max-w-xs mb-8 text-sm leading-relaxed">
-                A fast, private AI assistant powered by{" "}
-                <a href="https://github.com/Zulqurnain/offllama" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline">
-                  offLLama
+              <p className="text-stone-500 text-center max-w-xs mb-2 text-sm leading-relaxed">
+                Online demo for{" "}
+                <a href="https://github.com/Zulqurnain/offllama" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline font-medium">
+                  llmizeOFF
                 </a>
-                . No sign-up, no data retention.
+                {" "}— a self-hosted LLM runtime. Private, no data retention.
               </p>
+              {!session && (
+                <p className="text-[11px] text-stone-400 text-center mb-8">
+                  {ANON_PROMPT_LIMIT - getAnonCount()} free prompt{ANON_PROMPT_LIMIT - getAnonCount() !== 1 ? "s" : ""} remaining · <Link href="/auth/signup" className="text-orange-500 hover:underline">Sign up free</Link> for unlimited
+                </p>
+              )}
 
               {/* Feature pills */}
               <div className="flex flex-wrap gap-2 justify-center mb-8">

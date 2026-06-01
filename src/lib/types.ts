@@ -12,12 +12,12 @@ export interface ChatMessage {
 export interface Attachment {
   name: string;
   type: string;
-  content: string; // extracted text content (never raw binary)
+  content: string;
 }
 
 export type ModelId =
-  | "offllama"       // free — self-hosted
-  | "groq-llama"     // free — Groq cloud (sub-1s)
+  | "llmizeoff"      // free — self-hosted llmizeOFF runtime
+  | "groq-llama"     // free — Groq cloud (sub-1s, Llama 3.1 8B)
   | "gpt-4o-mini"    // paid — OpenAI
   | "claude-haiku"   // paid — Anthropic
   | "gpt-4o"         // paid — OpenAI
@@ -33,18 +33,18 @@ export interface Model {
 
 export const MODELS: Model[] = [
   {
-    id: "offllama",
-    name: "Qwen 2.5 (offLLama)",
-    provider: "Self-hosted",
+    id: "llmizeoff",
+    name: "Qwen 2.5 (llmizeOFF)",
+    provider: "llmizeOFF · Self-hosted",
     tier: "free",
-    description: "Private local model — no cloud, no data sent",
+    description: "Private local inference — no cloud, no data sent anywhere",
   },
   {
     id: "groq-llama",
     name: "Llama 3.1 8B (Groq)",
-    provider: "Groq",
+    provider: "Groq · Free cloud",
     tier: "free",
-    description: "Free cloud model — sub-1-second responses",
+    description: "Free cloud inference — sub-1-second responses via Groq LPU",
   },
   {
     id: "gpt-4o-mini",
