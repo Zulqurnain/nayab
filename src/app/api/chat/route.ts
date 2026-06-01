@@ -232,8 +232,28 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Build live context block injected into system prompt
+  const now = new Date();
+  const dateStr = now.toUTCString(); // e.g. "Sun, 01 Jun 2026 16:00:00 GMT"
+  const liveContext = [
+    `Current date and time: ${dateStr}`,
+    `User's IP address: ${ip}`,
+  ].join("\n");
+
+  const finalMessages = [...messages].map(m => ({ ...m }));
+
+  // Inject live context at the top of the system message (or prepend one)
+  const sysIdx = finalMessages.findIndex(m => m.role === "system");
+  if (sysIdx >= 0) {
+    finalMessages[sysIdx] = {
+      ...finalMessages[sysIdx],
+      content: `${liveContext}\n\n${finalMessages[sysIdx].content}`,
+    };
+  } else {
+    finalMessages.unshift({ role: "system", content: liveContext });
+  }
+
   // Prepend search context if provided
-  const finalMessages = [...messages];
   if (searchEnabled && searchQuery) {
     const lastUser = finalMessages.filter((m) => m.role === "user").pop();
     if (lastUser) {
