@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  basePath: "/chat",
 
   // Layer 3 & 12: External packages that need native bindings
   serverExternalPackages: ["pdf-parse", "better-sqlite3", "winston", "winston-daily-rotate-file"],

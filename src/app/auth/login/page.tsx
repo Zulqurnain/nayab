@@ -118,7 +118,7 @@ export default function LoginPage() {
         </p>
 
         <p className="text-center text-sm text-stone-400 mt-2">
-          <Link href="/chat" className="hover:text-orange-500">
+          <Link href="/" className="hover:text-orange-500">
             Continue without account →
           </Link>
         </p>

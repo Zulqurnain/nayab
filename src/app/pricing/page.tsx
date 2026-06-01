@@ -101,7 +101,7 @@ export default function PricingPage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/chat" className="block w-full text-center bg-stone-100 hover:bg-stone-200 text-stone-800 py-3 rounded-xl font-semibold transition-colors text-sm">
+              <Link href="/" className="block w-full text-center bg-stone-100 hover:bg-stone-200 text-stone-800 py-3 rounded-xl font-semibold transition-colors text-sm">
                 Start for free
               </Link>
             </div>
@@ -141,7 +141,7 @@ export default function PricingPage() {
                 </a>
                 <p className="text-center text-xs text-stone-500">
                   Have a license key?{" "}
-                  <Link href="/chat" className="text-orange-400 hover:underline">Open chat and click Upgrade</Link>
+                  <Link href="/" className="text-orange-400 hover:underline">Open chat and click Upgrade</Link>
                 </p>
               </div>
             </div>

@@ -26,7 +26,7 @@ export function Nav() {
 
         {/* Nav links */}
         <nav className="hidden sm:flex items-center gap-1">
-          <NavLink href="/chat" active={path.startsWith("/chat")}>Chat</NavLink>
+          <NavLink href="/" active={path === "/"}>Chat</NavLink>
           <NavLink href="/pricing" active={path === "/pricing"}>Pricing</NavLink>
           {user && <NavLink href="/dashboard" active={path === "/dashboard"}>Dashboard</NavLink>}
         </nav>
@@ -67,7 +67,7 @@ export function Nav() {
                       </p>
                     </div>
                     <div className="py-1">
-                      <MenuItem href="/chat" onClick={() => setMenuOpen(false)}>Chat</MenuItem>
+                      <MenuItem href="/" onClick={() => setMenuOpen(false)}>Chat</MenuItem>
                       <MenuItem href="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</MenuItem>
                       <MenuItem href="/settings" onClick={() => setMenuOpen(false)}>Settings</MenuItem>
                       {!isPro && (
@@ -97,7 +97,7 @@ export function Nav() {
                 Sign in
               </Link>
               <Link
-                href="/chat"
+                href="/"
                 className="text-sm bg-orange-500 text-white px-3 py-1.5 rounded-lg hover:bg-orange-600 transition-colors font-medium shadow-sm"
               >
                 Try free
