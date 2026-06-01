@@ -8,6 +8,7 @@ import { checkRateLimitDb } from "@/lib/rate-limit-db";
 import { getSessionUser } from "@/lib/auth-middleware";
 import { logRequest } from "@/lib/logger";
 import { getDb, usageLogs } from "@/lib/db";
+import { checkTokenQuota } from "@/lib/token-quota";
 import type { ModelId } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -81,7 +82,7 @@ async function streamLlmizeOff(
   const reader = res.body!.getReader();
   const dec = new TextDecoder();
   let buf = "";
-  let tokens = 0;
+  let chars = 0;
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -94,11 +95,11 @@ async function streamLlmizeOff(
       try {
         const c = JSON.parse(t);
         const text = c.choices?.[0]?.delta?.content;
-        if (text) { ctrl.enqueue(sseChunk(text)); tokens++; }
+        if (text) { ctrl.enqueue(sseChunk(text)); chars += text.length; }
       } catch { /* ignore malformed SSE */ }
     }
   }
-  return tokens;
+  return chars;
 }
 
 async function streamOpenAI(
@@ -106,7 +107,7 @@ async function streamOpenAI(
   model: string,
   ctrl: ReadableStreamDefaultController,
   signal: AbortSignal
-) {
+): Promise<number> {
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${OPENAI_KEY}` },
@@ -117,6 +118,7 @@ async function streamOpenAI(
   const reader = res.body!.getReader();
   const dec = new TextDecoder();
   let buf = "";
+  let chars = 0;
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -129,10 +131,11 @@ async function streamOpenAI(
       try {
         const c = JSON.parse(t);
         const text = c.choices?.[0]?.delta?.content;
-        if (text) ctrl.enqueue(sseChunk(text));
+        if (text) { ctrl.enqueue(sseChunk(text)); chars += text.length; }
       } catch { /* ignore */ }
     }
   }
+  return chars;
 }
 
 async function streamAnthropic(
@@ -140,7 +143,7 @@ async function streamAnthropic(
   model: string,
   ctrl: ReadableStreamDefaultController,
   signal: AbortSignal
-) {
+): Promise<number> {
   const system = messages.find((m) => m.role === "system")?.content;
   const userMessages = messages.filter((m) => m.role !== "system");
   const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -163,6 +166,7 @@ async function streamAnthropic(
   const reader = res.body!.getReader();
   const dec = new TextDecoder();
   let buf = "";
+  let chars = 0;
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -176,10 +180,12 @@ async function streamAnthropic(
         const evt = JSON.parse(t);
         if (evt.type === "content_block_delta" && evt.delta?.text) {
           ctrl.enqueue(sseChunk(evt.delta.text));
+          chars += evt.delta.text.length;
         }
       } catch { /* ignore */ }
     }
   }
+  return chars;
 }
 
 // Groq — free OpenAI-compatible API, sub-1-second first token via LPU chips
@@ -187,7 +193,7 @@ async function streamGroq(
   messages: z.infer<typeof MessageSchema>[],
   ctrl: ReadableStreamDefaultController,
   signal: AbortSignal
-) {
+): Promise<number> {
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${GROQ_KEY}` },
@@ -207,6 +213,7 @@ async function streamGroq(
   const reader = res.body!.getReader();
   const dec = new TextDecoder();
   let buf = "";
+  let chars = 0;
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -219,10 +226,11 @@ async function streamGroq(
       try {
         const c = JSON.parse(t);
         const text = c.choices?.[0]?.delta?.content;
-        if (text) ctrl.enqueue(sseChunk(text));
+        if (text) { ctrl.enqueue(sseChunk(text)); chars += text.length; }
       } catch { /* ignore */ }
     }
   }
+  return chars;
 }
 
 const OPENAI_MODEL_MAP: Record<string, string> = {
@@ -290,6 +298,30 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Free token quota (8-hour window): 20k anon / 200k signed-in / unlimited paid
+  const hasLicense = !!req.headers.get("x-license-key");
+  const effectivePlan = plan === "paid" || hasLicense ? "paid" : "free";
+  const quota = checkTokenQuota({ userId: sessionUser?.id ?? null, ip, plan: effectivePlan });
+  if (!quota.allowed) {
+    logRequest({ method: "POST", path: "/api/chat", statusCode: 402, latencyMs: Date.now() - start, ip, userId: sessionUser?.id });
+    const resetIn = Math.max(0, Math.ceil((quota.resetAt - Date.now()) / 60000));
+    return new Response(
+      JSON.stringify({
+        error: {
+          code: "TOKEN_LIMIT",
+          message: quota.signedIn
+            ? `You've used your 200,000 free tokens for this 8-hour window. Resets in ~${resetIn} min, or upgrade to Pro for unlimited.`
+            : `You've used your 20,000 free tokens. Sign up free for 200,000 tokens every 8 hours.`,
+          signedIn: quota.signedIn,
+          used: quota.used,
+          limit: quota.limit,
+          resetAt: quota.resetAt,
+        },
+      }),
+      { status: 402, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
   // Inject compact live context — keep it short to minimise prompt-eval time
   const now = new Date();
   const dateStr = now.toUTCString();
@@ -317,6 +349,9 @@ export async function POST(req: NextRequest) {
   }
 
   const signal = AbortSignal.timeout(90_000);
+  // Prompt tokens are known upfront; completion chars accumulate during streaming.
+  const promptChars = finalMessages.reduce((n, m) => n + m.content.length, 0);
+  let completionChars = 0;
   let tokenEstimate = 0;
   let statusCode = 200;
 
@@ -324,16 +359,16 @@ export async function POST(req: NextRequest) {
     async start(controller) {
       try {
         if (model === "llmizeoff") {
-          tokenEstimate = await streamLlmizeOff(finalMessages, controller, signal);
+          completionChars = await streamLlmizeOff(finalMessages, controller, signal);
         } else if (model === "groq-llama") {
           if (!GROQ_KEY) throw new Error("Groq not configured on this server. Add GROQ_API_KEY to .env.local");
-          await streamGroq(finalMessages, controller, signal);
+          completionChars = await streamGroq(finalMessages, controller, signal);
         } else if (model in OPENAI_MODEL_MAP) {
           if (!OPENAI_KEY) throw new Error("OpenAI not configured on this server.");
-          await streamOpenAI(finalMessages, OPENAI_MODEL_MAP[model as ModelId], controller, signal);
+          completionChars = await streamOpenAI(finalMessages, OPENAI_MODEL_MAP[model as ModelId], controller, signal);
         } else if (model in ANTHROPIC_MODEL_MAP) {
           if (!ANTHROPIC_KEY) throw new Error("Anthropic not configured on this server.");
-          await streamAnthropic(finalMessages, ANTHROPIC_MODEL_MAP[model as ModelId], controller, signal);
+          completionChars = await streamAnthropic(finalMessages, ANTHROPIC_MODEL_MAP[model as ModelId], controller, signal);
         } else {
           throw new Error(`Unknown model: ${model}`);
         }
@@ -345,6 +380,8 @@ export async function POST(req: NextRequest) {
         controller.enqueue(sseDone());
       } finally {
         controller.close();
+        // Token accounting: prompt + completion (~4 chars/token)
+        tokenEstimate = Math.ceil((promptChars + completionChars) / 4);
         // Layer 12: Log usage
         try {
           getDb().insert(usageLogs).values({

@@ -36,16 +36,13 @@ function clearLicense() {
   localStorage.removeItem("nayab_license");
 }
 
-const ANON_PROMPT_LIMIT = 4;
-const ANON_COUNT_KEY = "nayab_anon_count";
-
-function getAnonCount(): number {
-  if (typeof window === "undefined") return 0;
-  return parseInt(localStorage.getItem(ANON_COUNT_KEY) ?? "0", 10);
-}
-function incAnonCount() {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(ANON_COUNT_KEY, String(getAnonCount() + 1));
+interface UsageState {
+  used: number;
+  limit: number | null;
+  remaining: number | null;
+  resetAt: number;
+  signedIn: boolean;
+  unlimited: boolean;
 }
 
 export function ChatInterface() {
@@ -58,13 +55,26 @@ export function ChatInterface() {
   const [searchEnabled, setSearchEnabled] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState("");
+  const [usage, setUsage] = useState<UsageState | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Fetch token quota status (and refresh after each message)
+  const refreshUsage = useCallback(async () => {
+    try {
+      const lic = loadLicense();
+      const res = await fetch("/api/usage", {
+        headers: lic?.key ? { "x-license-key": lic.key } : {},
+      });
+      if (res.ok) setUsage(await res.json());
+    } catch { /* non-critical */ }
+  }, []);
 
   // Load license from localStorage on mount
   useEffect(() => {
     setLicense(loadLicense());
-  }, []);
+    refreshUsage();
+  }, [refreshUsage]);
 
   // Auto-scroll
   useEffect(() => {
@@ -90,14 +100,11 @@ export function ChatInterface() {
   async function handleSend(text: string, attachments: Attachment[], search: boolean) {
     setError("");
 
-    // 4-prompt gate for anonymous users
-    if (!session && status !== "loading") {
-      const count = getAnonCount();
-      if (count >= ANON_PROMPT_LIMIT) {
-        setShowAuthWall(true);
-        return;
-      }
-      incAnonCount();
+    // Token quota is enforced server-side (20k anon / 200k signed-in per 8h).
+    // If the client already knows the quota is exhausted, gate early for snappy UX.
+    if (usage && !usage.unlimited && usage.remaining !== null && usage.remaining <= 0) {
+      setShowAuthWall(true);
+      return;
     }
 
     // Build content with attachment context
@@ -177,8 +184,18 @@ export function ChatInterface() {
       }
       if (res.status === 402) {
         const data = await res.json().catch(() => ({}));
-        setShowPaidModal(true);
-        throw new Error(data.error ?? "Paid plan required.");
+        const code = data.error?.code;
+        const msg = data.error?.message ?? data.error ?? "Limit reached.";
+        if (code === "TOKEN_LIMIT") {
+          // Out of free tokens: anon → sign-up wall, signed-in → upgrade modal
+          if (data.error?.signedIn) setShowPaidModal(true);
+          else setShowAuthWall(true);
+          refreshUsage();
+        } else {
+          // Paid model requires a license
+          setShowPaidModal(true);
+        }
+        throw new Error(typeof msg === "string" ? msg : "Limit reached.");
       }
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
@@ -237,10 +254,12 @@ export function ChatInterface() {
     } finally {
       setIsStreaming(false);
       abortRef.current = null;
+      refreshUsage(); // update remaining-token display after each message
     }
   }
 
   const hasMessages = messages.length > 0;
+  const fmt = (n: number) => n.toLocaleString("en-US");
 
   return (
     <>
@@ -248,32 +267,32 @@ export function ChatInterface() {
         <PaidModal onClose={() => setShowPaidModal(false)} onVerified={handleVerified} />
       )}
 
-      {/* Auth wall — shown after 4 anonymous prompts */}
+      {/* Auth wall — shown when anonymous free tokens are exhausted */}
       {showAuthWall && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
             <div className="size-14 rounded-2xl bg-orange-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-200">
               <SparklesIcon className="size-7 text-white" />
             </div>
-            <h2 className="text-xl font-bold text-stone-900 mb-2">Enjoying Nayab?</h2>
+            <h2 className="text-xl font-bold text-stone-900 mb-2">You&apos;re out of free tokens</h2>
             <p className="text-stone-500 text-sm mb-1">
-              You&apos;ve used your <span className="font-semibold text-stone-700">4 free prompts</span>.
+              You&apos;ve used your <span className="font-semibold text-stone-700">20,000 free tokens</span>.
             </p>
             <p className="text-stone-400 text-xs mb-6">
-              Sign in or create a free account to keep chatting. No credit card needed.
+              Create a free account to get <span className="font-semibold text-orange-600">200,000 tokens</span> every 8 hours. No credit card needed.
             </p>
             <div className="space-y-3">
               <Link
-                href="/auth/login"
+                href="/auth/signup"
                 className="block w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-semibold text-sm transition-colors"
               >
-                Sign in
+                Create free account — 200k tokens
               </Link>
               <Link
-                href="/auth/signup"
+                href="/auth/login"
                 className="block w-full bg-stone-100 hover:bg-stone-200 text-stone-800 py-3 rounded-xl font-semibold text-sm transition-colors"
               >
-                Create free account
+                Sign in
               </Link>
             </div>
             <p className="text-[11px] text-stone-400 mt-5 leading-relaxed">
@@ -321,6 +340,22 @@ export function ChatInterface() {
 
             {/* Right controls */}
             <div className="flex items-center gap-2 shrink-0">
+              {/* Token quota badge */}
+              {usage && !usage.unlimited && usage.remaining !== null && (
+                <span
+                  title={`${fmt(usage.remaining)} of ${fmt(usage.limit ?? 0)} free tokens remaining this 8-hour window`}
+                  className={`hidden sm:inline text-[11px] font-medium px-2 py-1 rounded-lg border ${
+                    usage.remaining <= 0
+                      ? "bg-red-50 border-red-200 text-red-600"
+                      : usage.remaining < (usage.limit ?? 0) * 0.1
+                      ? "bg-amber-50 border-amber-200 text-amber-700"
+                      : "bg-stone-50 border-stone-200 text-stone-500"
+                  }`}
+                >
+                  {fmt(usage.remaining)} tokens
+                </span>
+              )}
+
               <ModelPicker
                 value={model}
                 onChange={setModel}
@@ -376,9 +411,12 @@ export function ChatInterface() {
                 </a>
                 {" "}— a self-hosted LLM runtime. Private, no data retention.
               </p>
-              {!session && (
+              {usage && !usage.unlimited && usage.remaining !== null && (
                 <p className="text-[11px] text-stone-400 text-center mb-8">
-                  {ANON_PROMPT_LIMIT - getAnonCount()} free prompt{ANON_PROMPT_LIMIT - getAnonCount() !== 1 ? "s" : ""} remaining · <Link href="/auth/signup" className="text-orange-500 hover:underline">Sign up free</Link> for unlimited
+                  {fmt(usage.remaining)} of {fmt(usage.limit ?? 0)} free tokens left
+                  {!usage.signedIn && (
+                    <> · <Link href="/auth/signup" className="text-orange-500 hover:underline">Sign up free</Link> for 200k every 8h</>
+                  )}
                 </p>
               )}
 
