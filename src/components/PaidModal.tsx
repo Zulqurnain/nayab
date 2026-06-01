@@ -102,7 +102,7 @@ export function PaidModal({ onClose, onVerified }: Props) {
 
           {/* Buy button */}
           <a
-            href="https://zulqurnainjj.gumroad.com/l/nayab"
+            href="https://zulqurnain45.gumroad.com/l/nayab"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full bg-stone-900 hover:bg-stone-800 text-white font-semibold rounded-xl py-3 mb-5 transition-colors"

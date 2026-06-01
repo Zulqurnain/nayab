@@ -132,7 +132,7 @@ export default function PricingPage() {
               </ul>
               <div className="space-y-2.5">
                 <a
-                  href="https://zulqurnainjj.gumroad.com/l/nayab"
+                  href="https://zulqurnain45.gumroad.com/l/nayab"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center w-full bg-orange-500 hover:bg-orange-400 text-white py-3.5 rounded-xl font-semibold transition-colors text-sm"

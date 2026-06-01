@@ -132,7 +132,7 @@ export default async function DashboardPage() {
                 </p>
               </div>
               <a
-                href="https://zulqurnainjj.gumroad.com/l/nayab"
+                href="https://zulqurnain45.gumroad.com/l/nayab"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="shrink-0 bg-orange-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-orange-600 transition-colors"
