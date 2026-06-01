@@ -229,7 +229,7 @@ export function ChatInterface() {
               </div>
               <div>
                 <h1 className="font-bold text-stone-900 text-sm leading-tight">Nayab</h1>
-                <p className="text-[10px] text-stone-400 leading-none">Powered by offLLama</p>
+                <a href="/llms.txt" className="text-[10px] text-stone-400 leading-none hover:text-orange-500">Powered by offLLama</a>
               </div>
             </div>
 
