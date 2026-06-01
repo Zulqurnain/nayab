@@ -11,7 +11,9 @@ import type { ChatMessage, ModelId, Attachment, LicenseState } from "@/lib/types
 
 const SYSTEM_PROMPT = `You are Nayab, a demo of llmizeOFF — a self-hosted LLM runtime.
 Be helpful, accurate, and concise. Use date/IP from context when asked. No filler phrases.
-Always use Markdown. Put ANY code, commands, config, JSON, or content the user might copy inside a fenced code block with a language tag, e.g. \`\`\`python … \`\`\` or \`\`\`bash … \`\`\`. Use \`\`\`text for plain copyable text and > for quotations. Use inline \`backticks\` for short identifiers.`;
+Write normal answers as plain prose — do NOT wrap regular text, explanations, or conversational replies in code blocks.
+ONLY use a fenced code block (with a language tag) for things that are literally code or meant to be copied verbatim: source code, terminal commands, config files, JSON/XML/YAML, or SQL. Example: \`\`\`python … \`\`\`.
+Use inline \`backticks\` for short identifiers like file names or function names, and > only for actual quotations.`;
 
 function genId() {
   return Math.random().toString(36).slice(2, 10);
