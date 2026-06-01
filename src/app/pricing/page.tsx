@@ -44,25 +44,95 @@ const PRO_FEATURES = [
 ];
 
 const FAQ = [
+  // Privacy & Data
   {
-    q: "What does 'fair use' mean?",
-    a: "The Pro plan is designed for personal or professional daily use — roughly 300 messages per day. We don't hard-cut you off, but automated bulk usage may be throttled to protect service quality for everyone.",
+    q: "Do you store my conversations?",
+    a: "No. Nayab stores nothing. The free tier runs on offLLama — inference happens on the server and the result is streamed back, but nothing is written to disk. The paid tier routes through OpenAI or Anthropic APIs under your implicit agreement with them, but Nayab itself never logs, stores, or analyses your messages.",
+  },
+  {
+    q: "Can Nayab see what I'm typing?",
+    a: "Free tier messages are processed by our self-hosted offLLama server (Qwen 2.5) and never leave that server in a readable form. Pro tier messages are forwarded to OpenAI or Anthropic's APIs — the same path as using ChatGPT or Claude directly. We never read or log those payloads.",
+  },
+  {
+    q: "Is Nayab private compared to ChatGPT?",
+    a: "Yes, meaningfully so. ChatGPT and similar cloud services store conversations and may use them to improve their models (unless you opt out). Nayab stores nothing on any tier, and the free tier never leaves our server at all. No conversation history, no training data harvesting.",
+  },
+  {
+    q: "Does Nayab collect analytics or telemetry?",
+    a: "No. Nayab does not phone home, track usage, or collect analytics. Your browser session is yours.",
+  },
+  // Pricing & Billing
+  {
+    q: "Is the $10 Pro license really one-time, or will I be charged again?",
+    a: "Truly one-time. $10 buys the license key permanently. There is no subscription, no annual renewal, no hidden fees. ChatGPT Plus costs $20 every month — Nayab Pro costs $10 once.",
   },
   {
     q: "How does the license key work?",
-    a: "After purchasing on Gumroad you'll receive a license key by email. Open Nayab, click Upgrade in the chat, paste your key, and you'll instantly have access to all premium models. The key is stored in your browser — no account needed.",
+    a: "After purchasing on Gumroad you receive a license key by email. Open Nayab, click Upgrade in the chat header, paste your key, and all premium models unlock instantly. The key is stored in your browser — no account required.",
   },
   {
-    q: "Can I use my license on multiple devices?",
-    a: "Yes. Enter your license key on any device running Nayab — it works across all your devices.",
+    q: "What payment methods are accepted?",
+    a: "Payments go through Gumroad, which accepts major credit cards, PayPal, Apple Pay, and Google Pay.",
   },
   {
-    q: "Do you store my conversations?",
-    a: "No. The free tier uses offLLama, which processes requests server-side but never writes conversations to disk. The paid tier routes through OpenAI or Anthropic APIs, which have their own privacy policies — but Nayab itself stores nothing.",
+    q: "Can I get a refund?",
+    a: "Yes. Gumroad handles all billing. Contact support@gumroad.com within 30 days of purchase if you're not satisfied — no questions asked.",
   },
   {
-    q: "What if I want a refund?",
-    a: "Gumroad handles all billing. Contact support@gumroad.com within 30 days of purchase if you're not satisfied.",
+    q: "What does 'fair use' mean for the free tier?",
+    a: "The free tier is rate-limited to roughly 20 requests per minute to keep the server responsive for everyone. There's no daily message cap — just don't run automated scripts against it.",
+  },
+  // Model quality
+  {
+    q: "Is Qwen 2.5 (the free model) actually capable, or is it a watered-down model?",
+    a: "Qwen 2.5 is a full, production-quality open-source LLM from Alibaba Research. It handles coding, writing, summarisation, and reasoning well. It's not a toy — it's the same model class developers self-host for serious work. For most everyday tasks you won't hit its limits.",
+  },
+  {
+    q: "When should I use Pro (GPT-4o / Claude) vs the free Qwen model?",
+    a: "Use Qwen for drafting, brainstorming, coding, Q&A, and summaries. Switch to GPT-4o or Claude for complex multi-step reasoning, nuanced long-form writing, or tasks where accuracy on hard questions really matters. You can switch models per conversation in-app.",
+  },
+  {
+    q: "Do AI models on Nayab hallucinate or make mistakes?",
+    a: "Yes — all large language models can produce confident-sounding incorrect answers. Always verify important information from a primary source. Pro gives you access to Claude 3.5 Sonnet, which has one of the lowest hallucination rates of any public model, and GPT-4o for a second opinion.",
+  },
+  {
+    q: "How does Nayab compare to ChatGPT Plus?",
+    a: "ChatGPT Plus is $20/month, cloud-only, stores your conversations, and may use them to improve OpenAI's models. Nayab Pro is $10 one-time, stores nothing, and gives you access to the same GPT-4o model plus Claude Sonnet. If privacy and cost matter to you, Nayab wins. If you want voice, image generation, or deep integrations, ChatGPT is ahead.",
+  },
+  // Devices & access
+  {
+    q: "Can I use my Pro license on multiple devices?",
+    a: "Yes. Enter your license key on any device — it works everywhere. There's no device limit.",
+  },
+  {
+    q: "Does Nayab work on mobile?",
+    a: "The web app is responsive and works on mobile browsers, but it's optimised for desktop. A dedicated mobile app is on the roadmap.",
+  },
+  // Conversations & history
+  {
+    q: "How do I save an important conversation?",
+    a: "Copy and paste the conversation text, or select all and save it as a document. Nayab intentionally doesn't auto-save conversations — it's a privacy feature, not a bug. If you need history, keep a note.",
+  },
+  {
+    q: "Can I share a conversation with someone?",
+    a: "Not with a shareable link — Nayab has no cloud backend to host shared chats. Copy the conversation text and send it directly. The recipient can paste it into their own Nayab session to continue from context.",
+  },
+  // Technical
+  {
+    q: "What is offLLama and why does it matter?",
+    a: "offLLama is an open-source library built by Zulqurnain Haider that wraps llama.cpp to run LLMs on standard shared hosting and VPS servers without a GPU. It's what makes the free tier possible — instead of paying OpenAI per token, the model runs on our own server. Source: github.com/Zulqurnain/offllama.",
+  },
+  {
+    q: "Does Nayab have an API I can use in my own apps?",
+    a: "Not yet. Nayab is a consumer chat interface, not an API service. For programmatic LLM access, check out the offLLama library directly or use OpenAI/Anthropic APIs.",
+  },
+  {
+    q: "Will there be more features — file uploads, voice, image generation?",
+    a: "File uploads (PDF, TXT, images) are already supported in the free tier. Voice and image generation are planned. Features are shipped based on demand — if something matters to you, open a GitHub issue or reach out.",
+  },
+  {
+    q: "What if the service goes down or Nayab shuts down?",
+    a: "The free tier depends on our server being online. If the service ever shuts down, Pro users still have valid OpenAI/Anthropic API keys — you can use those directly. We're committed to keeping Nayab running, but your Pro license is not locked to us.",
   },
 ];
 
