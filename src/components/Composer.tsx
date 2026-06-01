@@ -52,9 +52,13 @@ interface Props {
   placeholder?: string;
   searchEnabled: boolean;
   onToggleSearch: () => void;
+  /** Token quota — drives the slim usage bar at the base of the box. */
+  tokensUsed?: number;
+  tokensLimit?: number | null;
+  unlimited?: boolean;
 }
 
-export function Composer({ onSend, disabled, placeholder, searchEnabled, onToggleSearch }: Props) {
+export function Composer({ onSend, disabled, placeholder, searchEnabled, onToggleSearch, tokensUsed, tokensLimit, unlimited }: Props) {
   const [text, setText] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [fileError, setFileError] = useState("");
@@ -204,6 +208,32 @@ export function Composer({ onSend, disabled, placeholder, searchEnabled, onToggl
             )}
           </button>
         </div>
+
+        {/* Slim token-usage bar along the base of the box */}
+        {!unlimited && typeof tokensUsed === "number" && tokensLimit ? (() => {
+          const pct = Math.min(100, Math.round((tokensUsed / tokensLimit) * 100));
+          const remaining = Math.max(0, tokensLimit - tokensUsed);
+          const barColor = pct >= 100 ? "bg-red-500" : pct >= 90 ? "bg-amber-500" : "bg-orange-400";
+          return (
+            <div
+              className="px-3 pb-2"
+              title={`${remaining.toLocaleString("en-US")} of ${tokensLimit.toLocaleString("en-US")} free tokens left this 8-hour window`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] text-stone-400 font-medium">
+                  {remaining.toLocaleString("en-US")} free tokens left
+                </span>
+                <span className="text-[10px] text-stone-300 tabular-nums">{pct}%</span>
+              </div>
+              <div className="h-1 w-full rounded-full bg-stone-100 overflow-hidden">
+                <div
+                  className={`h-full ${barColor} rounded-full transition-all duration-500`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </div>
+          );
+        })() : null}
       </div>
 
       <p className="text-center text-[10px] text-stone-400 mt-2">

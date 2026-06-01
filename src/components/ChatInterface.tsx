@@ -259,7 +259,6 @@ export function ChatInterface() {
   }
 
   const hasMessages = messages.length > 0;
-  const fmt = (n: number) => n.toLocaleString("en-US");
 
   return (
     <>
@@ -340,22 +339,6 @@ export function ChatInterface() {
 
             {/* Right controls */}
             <div className="flex items-center gap-2 shrink-0">
-              {/* Token quota badge */}
-              {usage && !usage.unlimited && usage.remaining !== null && (
-                <span
-                  title={`${fmt(usage.remaining)} of ${fmt(usage.limit ?? 0)} free tokens remaining this 8-hour window`}
-                  className={`hidden sm:inline text-[11px] font-medium px-2 py-1 rounded-lg border ${
-                    usage.remaining <= 0
-                      ? "bg-red-50 border-red-200 text-red-600"
-                      : usage.remaining < (usage.limit ?? 0) * 0.1
-                      ? "bg-amber-50 border-amber-200 text-amber-700"
-                      : "bg-stone-50 border-stone-200 text-stone-500"
-                  }`}
-                >
-                  {fmt(usage.remaining)} tokens
-                </span>
-              )}
-
               <ModelPicker
                 value={model}
                 onChange={setModel}
@@ -411,14 +394,12 @@ export function ChatInterface() {
                 </a>
                 {" "}— a self-hosted LLM runtime. Private, no data retention.
               </p>
-              {usage && !usage.unlimited && usage.remaining !== null && (
+              {usage && !usage.unlimited && !usage.signedIn && (
                 <p className="text-[11px] text-stone-400 text-center mb-8">
-                  {fmt(usage.remaining)} of {fmt(usage.limit ?? 0)} free tokens left
-                  {!usage.signedIn && (
-                    <> · <Link href="/auth/signup" className="text-orange-500 hover:underline">Sign up free</Link> for 200k every 8h</>
-                  )}
+                  <Link href="/auth/signup" className="text-orange-500 hover:underline">Sign up free</Link> for 200,000 tokens every 8 hours
                 </p>
               )}
+              {(!usage || usage.unlimited || usage.signedIn) && <div className="mb-8" />}
 
               {/* Feature pills */}
               <div className="flex flex-wrap gap-2 justify-center mb-8">
@@ -443,6 +424,9 @@ export function ChatInterface() {
                   placeholder="Ask Nayab anything…"
                   searchEnabled={searchEnabled}
                   onToggleSearch={() => setSearchEnabled((v) => !v)}
+                  tokensUsed={usage?.used}
+                  tokensLimit={usage?.limit ?? null}
+                  unlimited={usage?.unlimited}
                 />
               </div>
 
@@ -494,6 +478,9 @@ export function ChatInterface() {
                 placeholder="Message Nayab…"
                 searchEnabled={searchEnabled}
                 onToggleSearch={() => setSearchEnabled((v) => !v)}
+                tokensUsed={usage?.used}
+                tokensLimit={usage?.limit ?? null}
+                unlimited={usage?.unlimited}
               />
             </div>
           </div>
