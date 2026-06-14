@@ -7,8 +7,7 @@ import { z } from "zod";
 import { Errors } from "@/lib/errors";
 import { logRequest } from "@/lib/logger";
 import { getSessionUser } from "@/lib/auth-middleware";
-import { getDb, users } from "@/lib/db";
-import { eq } from "drizzle-orm";
+import { getUserByEmail, updateUserPlan } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -80,11 +79,7 @@ export async function POST(req: NextRequest) {
     try {
       const sessionUser = await getSessionUser(req);
       if (sessionUser) {
-        const db = getDb();
-        db.update(users)
-          .set({ plan: "paid", lastActiveAt: new Date() })
-          .where(eq(users.id, sessionUser.id))
-          .run();
+        await updateUserPlan(sessionUser.id, "paid");
         planUpgraded = true;
       }
     } catch { /* non-fatal — they still get localStorage-based access */ }

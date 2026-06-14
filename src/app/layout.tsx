@@ -15,6 +15,11 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary", title: "Nayab — llmizeOFF Demo", description: "Try llmizeOFF — a self-hosted LLM runtime. No subscriptions, no lock-in." },
   robots: { index: true, follow: true },
+  icons: {
+    icon: [{ url: "/chat/favicon.svg", type: "image/svg+xml" }],
+    shortcut: "/chat/favicon.svg",
+    apple: "/chat/favicon.svg",
+  },
 };
 
 export const viewport: Viewport = {

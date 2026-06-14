@@ -1,15 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://chat.zulqurnainj.com/</loc>
-    <lastmod>2026-06-01</lastmod>
+    <loc>https://zulqurnainj.com/chat</loc>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://chat.zulqurnainj.com/llms.txt</loc>
-    <lastmod>2026-06-01</lastmod>
+    <loc>https://zulqurnainj.com/chat/about</loc>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://zulqurnainj.com/chat/pricing</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://zulqurnainj.com/chat/auth/login</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>yearly</changefreq>
     <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://zulqurnainj.com/chat/auth/signup</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <!-- AI-readable mirrors -->
+  <url>
+    <loc>https://zulqurnainj.com/chat/llms.txt</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://zulqurnainj.com/chat/index.md</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
   </url>
 </urlset>

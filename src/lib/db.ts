@@ -1,143 +1,244 @@
 /**
- * Layer 3: Database and Storage
- * Drizzle ORM + better-sqlite3 synchronous driver.
- * Database file lives at /var/data/nayab.db (outside Next.js build).
+ * Nayab PocketBase data layer — replaces Drizzle ORM + better-sqlite3.
+ * All functions are async (HTTP to local PocketBase at 127.0.0.1:8090).
  */
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { sql } from "drizzle-orm";
-import {
-  sqliteTable,
-  text,
-  integer,
-  real,
-} from "drizzle-orm/sqlite-core";
-import path from "path";
-import fs from "fs";
 
-// ─── Schema ────────────────────────────────────────────────────────────────
+const PB = process.env.POCKETBASE_URL ?? "http://127.0.0.1:8090";
+const PB_ADMIN_EMAIL = process.env.PB_ADMIN_EMAIL ?? "zulqurnainapps@gmail.com";
+const PB_ADMIN_PASSWORD = process.env.PB_ADMIN_PASSWORD ?? "";
 
-export const users = sqliteTable("users", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  email: text("email").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
-  plan: text("plan", { enum: ["free", "paid"] }).notNull().default("free"),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-  lastActiveAt: integer("last_active_at", { mode: "timestamp_ms" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-});
+// ─── Admin token cache ──────────────────────────────────────────────────────
 
-export const apiKeys = sqliteTable("api_keys", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: integer("user_id")
-    .notNull()
-    .references(() => users.id),
-  keyHash: text("key_hash").notNull().unique(),
-  name: text("name").notNull().default("default"),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-  revokedAt: integer("revoked_at", { mode: "timestamp_ms" }),
-});
+let _cachedToken: string | null = null;
+let _tokenExpiry = 0;
 
-export const usageLogs = sqliteTable("usage_logs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: integer("user_id"),
-  ip: text("ip").notNull().default("unknown"),
-  model: text("model").notNull(),
-  tokens: integer("tokens").notNull().default(0),
-  latencyMs: integer("latency_ms").notNull().default(0),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-});
+async function adminToken(): Promise<string> {
+  const now = Date.now();
+  if (_cachedToken && now < _tokenExpiry) return _cachedToken;
 
-export const rateLimitBuckets = sqliteTable("rate_limit_buckets", {
-  key: text("key").primaryKey(),
-  tokens: real("tokens").notNull(),
-  lastRefill: integer("last_refill", { mode: "timestamp_ms" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-});
+  const r = await fetch(
+    `${PB}/api/collections/_superusers/auth-with-password`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ identity: PB_ADMIN_EMAIL, password: PB_ADMIN_PASSWORD }),
+    }
+  );
+  if (!r.ok) throw new Error(`PB auth failed: ${r.status}`);
+  const d = await r.json() as { token: string };
+  _cachedToken = d.token;
+  _tokenExpiry = now + 10 * 60 * 1000; // refresh every 10 min
+  return _cachedToken;
+}
 
-// ─── Singleton connection ───────────────────────────────────────────────────
+async function pbFetch(path: string, opts: RequestInit = {}): Promise<Response> {
+  const token = await adminToken();
+  return fetch(`${PB}${path}`, {
+    ...opts,
+    headers: { "Authorization": token, "Content-Type": "application/json", ...(opts.headers ?? {}) },
+  });
+}
 
-const DB_PATH = process.env.DB_PATH ?? "/var/data/nayab.db";
+// ─── Types ──────────────────────────────────────────────────────────────────
 
-let _db: ReturnType<typeof drizzle> | null = null;
-let _sqlite: Database.Database | null = null;
+export interface NyUser {
+  id: string;
+  email: string;
+  passwordHash: string;
+  plan: "free" | "paid";
+  createdAt: number;
+  lastActiveAt: number;
+}
 
-export function getDb() {
-  if (_db) return _db;
+export interface NyApiKey {
+  id: string;
+  userId: string;
+  keyHash: string;
+  name: string;
+  revokedAt: number | null;
+  created: string;
+}
 
-  // Ensure directory exists
-  const dir = path.dirname(DB_PATH);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+export interface NyUsageLog {
+  id: string;
+  userId: string | null;
+  ip: string;
+  model: string;
+  tokens: number;
+  latencyMs: number;
+  created: string;
+}
+
+export interface NyRateBucket {
+  id: string;
+  key: string;
+  tokens: number;
+  lastRefill: number;
+}
+
+// ─── Users ──────────────────────────────────────────────────────────────────
+
+export async function getUserByEmail(email: string): Promise<NyUser | null> {
+  const r = await pbFetch(
+    `/api/collections/ny_users/records?filter=${encodeURIComponent(`email="${email.toLowerCase()}"`)}&perPage=1`
+  );
+  if (!r.ok) return null;
+  const d = await r.json() as { items: Record<string, unknown>[] };
+  if (!d.items?.length) return null;
+  return mapUser(d.items[0]);
+}
+
+export async function getUserById(id: string): Promise<NyUser | null> {
+  const r = await pbFetch(`/api/collections/ny_users/records/${id}`);
+  if (!r.ok) return null;
+  return mapUser(await r.json());
+}
+
+export async function createUser(data: { email: string; passwordHash: string; plan?: "free" | "paid" }): Promise<NyUser> {
+  const now = Date.now();
+  const r = await pbFetch("/api/collections/ny_users/records", {
+    method: "POST",
+    body: JSON.stringify({
+      email: data.email.toLowerCase(),
+      passwordHash: data.passwordHash,
+      plan: data.plan ?? "free",
+      createdAt: now,
+      lastActiveAt: now,
+    }),
+  });
+  if (!r.ok) throw new Error(`createUser failed: ${await r.text()}`);
+  return mapUser(await r.json());
+}
+
+export async function updateUserPlan(id: string, plan: "free" | "paid"): Promise<void> {
+  await pbFetch(`/api/collections/ny_users/records/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ plan, lastActiveAt: Date.now() }),
+  });
+}
+
+export async function touchUser(id: string): Promise<void> {
+  await pbFetch(`/api/collections/ny_users/records/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ lastActiveAt: Date.now() }),
+  });
+}
+
+function mapUser(r: Record<string, unknown>): NyUser {
+  return {
+    id: r.id as string,
+    email: r.email as string,
+    passwordHash: (r.passwordHash ?? "") as string,
+    plan: (r.plan as "free" | "paid") ?? "free",
+    createdAt: Number(r.createdAt ?? 0),
+    lastActiveAt: Number(r.lastActiveAt ?? 0),
+  };
+}
+
+// ─── Usage logs ─────────────────────────────────────────────────────────────
+
+export async function insertUsageLog(data: {
+  userId?: string | null;
+  ip: string;
+  model: string;
+  tokens: number;
+  latencyMs: number;
+}): Promise<void> {
+  await pbFetch("/api/collections/ny_usage_logs/records", {
+    method: "POST",
+    body: JSON.stringify({
+      userId: data.userId ?? "",
+      ip: data.ip,
+      model: data.model,
+      tokens: data.tokens,
+      latencyMs: data.latencyMs,
+    }),
+  });
+}
+
+export async function getUsedTokensInWindow(opts: {
+  userId?: string | null;
+  ip: string;
+  since: number;
+}): Promise<number> {
+  let filter: string;
+  if (opts.userId) {
+    filter = `userId="${opts.userId}" && created>="${new Date(opts.since).toISOString()}"`;
+  } else {
+    filter = `userId="" && ip="${opts.ip}" && created>="${new Date(opts.since).toISOString()}"`;
   }
-
-  _sqlite = new Database(DB_PATH);
-  _sqlite.pragma("journal_mode = WAL");
-  _sqlite.pragma("foreign_keys = ON");
-
-  _db = drizzle(_sqlite);
-
-  // Run migrations inline (idempotent CREATE IF NOT EXISTS)
-  _sqlite.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      email TEXT NOT NULL UNIQUE,
-      password_hash TEXT NOT NULL,
-      plan TEXT NOT NULL DEFAULT 'free' CHECK(plan IN ('free','paid')),
-      created_at INTEGER NOT NULL,
-      last_active_at INTEGER NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS api_keys (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL REFERENCES users(id),
-      key_hash TEXT NOT NULL UNIQUE,
-      name TEXT NOT NULL DEFAULT 'default',
-      created_at INTEGER NOT NULL,
-      revoked_at INTEGER
-    );
-
-    CREATE TABLE IF NOT EXISTS usage_logs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER,
-      ip TEXT NOT NULL DEFAULT 'unknown',
-      model TEXT NOT NULL,
-      tokens INTEGER NOT NULL DEFAULT 0,
-      latency_ms INTEGER NOT NULL DEFAULT 0,
-      created_at INTEGER NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS rate_limit_buckets (
-      key TEXT PRIMARY KEY,
-      tokens REAL NOT NULL,
-      last_refill INTEGER NOT NULL
-    );
-  `);
-
-  return _db;
+  const r = await pbFetch(
+    `/api/collections/ny_usage_logs/records?filter=${encodeURIComponent(filter)}&perPage=500&fields=tokens`
+  );
+  if (!r.ok) return 0;
+  const d = await r.json() as { items: { tokens: number }[] };
+  return d.items?.reduce((sum, item) => sum + (item.tokens ?? 0), 0) ?? 0;
 }
 
-/** Graceful shutdown */
-export function closeDb() {
-  _sqlite?.close();
-  _sqlite = null;
-  _db = null;
+export async function countLogsByUser(userId: string): Promise<{ today: number; week: number; total: number }> {
+  const now = Date.now();
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const weekStart = new Date(now - 7 * 24 * 60 * 60 * 1000);
+
+  const [todayR, weekR, totalR] = await Promise.all([
+    pbFetch(`/api/collections/ny_usage_logs/records?filter=${encodeURIComponent(`userId="${userId}" && created>="${todayStart.toISOString()}"`)}&perPage=1`),
+    pbFetch(`/api/collections/ny_usage_logs/records?filter=${encodeURIComponent(`userId="${userId}" && created>="${weekStart.toISOString()}"`)}&perPage=1`),
+    pbFetch(`/api/collections/ny_usage_logs/records?filter=${encodeURIComponent(`userId="${userId}"`)}&perPage=1`),
+  ]);
+
+  const parse = async (res: Response) => {
+    if (!res.ok) return 0;
+    const d = await res.json() as { totalItems?: number };
+    return d.totalItems ?? 0;
+  };
+
+  const [today, week, total] = await Promise.all([parse(todayR), parse(weekR), parse(totalR)]);
+  return { today, week, total };
 }
 
-/** Quick connectivity check — returns true if DB is reachable */
-export function checkDb(): boolean {
+// ─── Rate limit buckets ─────────────────────────────────────────────────────
+
+export async function getRateBucket(key: string): Promise<NyRateBucket | null> {
+  const r = await pbFetch(
+    `/api/collections/ny_rate_limit_buckets/records?filter=${encodeURIComponent(`key="${key}"`)}&perPage=1`
+  );
+  if (!r.ok) return null;
+  const d = await r.json() as { items: Record<string, unknown>[] };
+  if (!d.items?.length) return null;
+  return mapBucket(d.items[0]);
+}
+
+export async function upsertRateBucket(data: { key: string; tokens: number; lastRefill: number }): Promise<void> {
+  const existing = await getRateBucket(data.key);
+  if (existing) {
+    await pbFetch(`/api/collections/ny_rate_limit_buckets/records/${existing.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ tokens: data.tokens, lastRefill: data.lastRefill }),
+    });
+  } else {
+    await pbFetch("/api/collections/ny_rate_limit_buckets/records", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+}
+
+function mapBucket(r: Record<string, unknown>): NyRateBucket {
+  return {
+    id: r.id as string,
+    key: r.key as string,
+    tokens: Number(r.tokens ?? 0),
+    lastRefill: Number(r.lastRefill ?? 0),
+  };
+}
+
+// ─── Health check ────────────────────────────────────────────────────────────
+
+export async function checkDb(): Promise<boolean> {
   try {
-    const db = getDb();
-    db.run(sql`SELECT 1`);
-    return true;
+    const r = await fetch(`${PB}/api/health`, { signal: AbortSignal.timeout(3000) });
+    return r.ok;
   } catch {
     return false;
   }

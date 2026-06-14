@@ -1,6 +1,5 @@
 /**
  * GET /api/usage — current token quota status for the caller.
- * Used by the chat UI to display remaining free tokens and the reset time.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth-middleware";
@@ -27,15 +26,16 @@ export async function GET(req: NextRequest) {
   const hasLicense = !!req.headers.get("x-license-key");
   const plan = sessionUser?.plan === "paid" || hasLicense ? "paid" : "free";
 
-  const q = checkTokenQuota({ userId: sessionUser?.id ?? null, ip, plan });
+  const q = await checkTokenQuota({ userId: sessionUser?.id ?? null, ip, plan });
+  const remaining = q.limit === Infinity ? Infinity : Math.max(0, q.limit - q.used);
 
   return NextResponse.json(
     {
       signedIn: q.signedIn,
-      plan: q.plan,
+      plan,
       used: q.used,
       limit: q.limit === Infinity ? null : q.limit,
-      remaining: q.remaining === Infinity ? null : q.remaining,
+      remaining: remaining === Infinity ? null : remaining,
       resetAt: q.resetAt,
       unlimited: q.limit === Infinity,
     },

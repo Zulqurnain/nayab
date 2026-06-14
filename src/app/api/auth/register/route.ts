@@ -1,12 +1,7 @@
-/**
- * Layer 4: User registration endpoint.
- * POST /api/auth/register
- */
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-import { getDb, users } from "@/lib/db";
-import { eq } from "drizzle-orm";
+import { getUserByEmail, createUser } from "@/lib/db";
 import { Errors } from "@/lib/errors";
 import { logRequest } from "@/lib/logger";
 
@@ -37,10 +32,9 @@ export async function POST(req: NextRequest) {
     }
 
     const { email, password } = parsed.data;
-    const db = getDb();
 
-    const existing = db.select().from(users).where(eq(users.email, email.toLowerCase())).all();
-    if (existing.length > 0) {
+    const existing = await getUserByEmail(email.toLowerCase());
+    if (existing) {
       status = 409;
       return NextResponse.json(
         { error: { code: "EMAIL_TAKEN", message: "Email already registered" } },
@@ -49,21 +43,11 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const now = Date.now();
-
-    db.insert(users)
-      .values({
-        email: email.toLowerCase(),
-        passwordHash,
-        plan: "free",
-        createdAt: new Date(now),
-        lastActiveAt: new Date(now),
-      })
-      .run();
+    await createUser({ email: email.toLowerCase(), passwordHash, plan: "free" });
 
     status = 201;
     return NextResponse.json({ success: true, message: "Account created" }, { status: 201 });
-  } catch (err) {
+  } catch {
     status = 500;
     return Errors.internal();
   } finally {

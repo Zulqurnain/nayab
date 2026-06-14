@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 export type Plan = "free" | "paid";
 
 export interface SessionUser {
-  id: number;
+  id: string;
   email: string;
   plan: Plan;
 }

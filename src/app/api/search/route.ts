@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 
   try {
     // Layer 9: Rate limiting
-    const rl = checkRateLimitDb(`search:${ip}`, "free");
+    const rl = await checkRateLimitDb(`search:${ip}`, "free");
     if (!rl.allowed) {
       statusCode = 429;
       return Errors.tooManyRequests("Rate limited", rl.retryAfterMs);

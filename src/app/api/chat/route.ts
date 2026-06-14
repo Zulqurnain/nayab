@@ -7,7 +7,7 @@ import { z } from "zod";
 import { checkRateLimitDb } from "@/lib/rate-limit-db";
 import { getSessionUser } from "@/lib/auth-middleware";
 import { logRequest } from "@/lib/logger";
-import { getDb, usageLogs } from "@/lib/db";
+import { insertUsageLog } from "@/lib/db";
 import { checkTokenQuota } from "@/lib/token-quota";
 import type { ModelId } from "@/lib/types";
 
@@ -274,7 +274,7 @@ export async function POST(req: NextRequest) {
 
   // Layer 9: DB-backed rate limiting
   const rlKey = sessionUser ? `user:${sessionUser.id}` : `ip:${ip}`;
-  const rl = checkRateLimitDb(rlKey, plan);
+  const rl = await checkRateLimitDb(rlKey, plan);
   if (!rl.allowed) {
     logRequest({ method: "POST", path: "/api/chat", statusCode: 429, latencyMs: Date.now() - start, ip, userId: sessionUser?.id });
     return errResponse("RATE_LIMITED", "Rate limited. Please wait before sending another message.", 429, Math.ceil(rl.retryAfterMs / 1000));
@@ -308,7 +308,7 @@ export async function POST(req: NextRequest) {
   // Free token quota (8-hour window): 20k anon / 200k signed-in / unlimited paid
   const hasLicense = !!req.headers.get("x-license-key");
   const effectivePlan = plan === "paid" || hasLicense ? "paid" : "free";
-  const quota = checkTokenQuota({ userId: sessionUser?.id ?? null, ip, plan: effectivePlan });
+  const quota = await checkTokenQuota({ userId: sessionUser?.id ?? null, ip, plan: effectivePlan });
   if (!quota.allowed) {
     logRequest({ method: "POST", path: "/api/chat", statusCode: 402, latencyMs: Date.now() - start, ip, userId: sessionUser?.id });
     const resetIn = Math.max(0, Math.ceil((quota.resetAt - Date.now()) / 60000));
@@ -397,14 +397,13 @@ export async function POST(req: NextRequest) {
         tokenEstimate = Math.ceil((promptChars + completionChars) / 4);
         // Layer 12: Log usage
         try {
-          getDb().insert(usageLogs).values({
+          insertUsageLog({
             userId: sessionUser?.id ?? null,
             ip,
             model,
             tokens: tokenEstimate,
             latencyMs: Date.now() - start,
-            createdAt: new Date(),
-          }).run();
+          }).catch(() => {});
         } catch { /* non-critical */ }
         logRequest({
           method: "POST",

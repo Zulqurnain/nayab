@@ -67,7 +67,7 @@ export function logRequest(params: {
   path: string;
   statusCode: number;
   latencyMs: number;
-  userId?: number | null;
+  userId?: string | null;
   ip?: string;
   error?: unknown;
 }) {

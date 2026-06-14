@@ -30,6 +30,8 @@ export function Nav() {
           <NavLink href="/about" active={path === "/about"}>About</NavLink>
           <NavLink href="/pricing" active={path === "/pricing"}>Pricing</NavLink>
           {user && <NavLink href="/dashboard" active={path === "/dashboard"}>Dashboard</NavLink>}
+          <a href="/llms.txt" className="text-[11px] px-2 py-1 rounded-md font-medium text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors" title="LLM index — machine-readable site summary" style={{opacity:.6}}>llms.txt</a>
+          <a href="/sitemap.xml" className="text-[11px] px-2 py-1 rounded-md font-medium text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors" title="XML sitemap" style={{opacity:.6}}>sitemap</a>
         </nav>
 
         {/* Right side */}

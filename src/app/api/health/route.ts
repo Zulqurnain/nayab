@@ -38,10 +38,10 @@ function checkDisk() {
   }
 }
 
-function checkDbSubsystem() {
+async function checkDbSubsystem() {
   const start = Date.now();
   try {
-    const ok = checkDb();
+    const ok = await checkDb();
     return ok
       ? { status: "ok" as const, latencyMs: Date.now() - start }
       : { status: "down" as const, detail: "query failed" };
@@ -51,11 +51,11 @@ function checkDbSubsystem() {
 }
 
 export async function GET() {
-  const [llmizeoffStatus, diskStatus] = await Promise.all([
+  const [llmizeoffStatus, diskStatus, dbStatus] = await Promise.all([
     checkLlmizeOff(),
     Promise.resolve(checkDisk()),
+    checkDbSubsystem(),
   ]);
-  const dbStatus = checkDbSubsystem();
 
   const subsystems = { db: dbStatus, llmizeoff: llmizeoffStatus, disk: diskStatus };
   const statuses = Object.values(subsystems).map((s) => s.status);

@@ -7,12 +7,10 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { logRequest } from "@/lib/logger";
-import { getDb, users } from "@/lib/db";
-import { eq } from "drizzle-orm";
+import { getUserByEmail, updateUserPlan } from "@/lib/db";
 
 export const runtime = "nodejs";
 
-// Gumroad pings our endpoint with form-encoded data
 export async function POST(req: NextRequest) {
   const start = Date.now();
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
@@ -28,19 +26,15 @@ export async function POST(req: NextRequest) {
     } else if (contentType.includes("application/json")) {
       data = await req.json() as Record<string, string>;
     } else {
-      // Try form-encoded as fallback
       const text = await req.text();
       try { data = Object.fromEntries(new URLSearchParams(text)); }
       catch { data = {}; }
     }
 
     const email = data.email ?? data.buyer_email ?? "";
-    const licenseKey = data.license_key ?? "";
     const productPermalink = data.product_permalink ?? "";
     const refunded = data.refunded === "true";
 
-    // Only process sales for our product
-    // Accept if permalink contains "nayab" or if no product filter
     if (productPermalink && !productPermalink.toLowerCase().includes("nayab")) {
       return NextResponse.json({ ok: true, skipped: "different product" });
     }
@@ -51,39 +45,28 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      const db = getDb();
-      const matchingUsers = db.select().from(users).where(eq(users.email, email.toLowerCase().trim())).all();
-
-      if (matchingUsers.length > 0) {
+      const user = await getUserByEmail(email.toLowerCase().trim());
+      if (user) {
         const newPlan = refunded ? "free" : "paid";
-        db.update(users)
-          .set({ plan: newPlan, lastActiveAt: new Date() })
-          .where(eq(users.email, email.toLowerCase().trim()))
-          .run();
-
+        await updateUserPlan(user.id, newPlan);
         logRequest({
           method: "POST",
           path: "/api/webhooks/gumroad",
           statusCode: 200,
           latencyMs: Date.now() - start,
           ip,
-          userId: matchingUsers[0]?.id,
+          userId: user.id,
         });
       }
-      // Even if user not found: return 200 so Gumroad doesn't retry
-    } catch (dbErr) {
-      // Log but return 200 — Gumroad will retry on non-200
-    }
+    } catch { /* return 200 so Gumroad doesn't retry */ }
 
     return NextResponse.json({ ok: true, email: email.slice(0, 3) + "***" });
-
-  } catch (err) {
+  } catch {
     statusCode = 500;
-    return NextResponse.json({ ok: false }, { status: 200 }); // Return 200 to prevent Gumroad retries
+    return NextResponse.json({ ok: false }, { status: 200 });
   }
 }
 
-// Gumroad sends GET to verify the webhook URL
 export async function GET() {
   return NextResponse.json({ ok: true, service: "nayab-gumroad-webhook" });
 }
