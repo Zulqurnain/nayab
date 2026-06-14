@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="7" fill="#f97316"/>
+  <!-- sparkle star: main 4-point -->
+  <path d="M16 7 C16 7 17.2 12.8 21.5 14.5 C17.2 16.2 16 22 16 22 C16 22 14.8 16.2 10.5 14.5 C14.8 12.8 16 7 16 7 Z" fill="white"/>
+  <!-- small sparkle top-right -->
+  <path d="M23 8 C23 8 23.6 10.8 25.5 11.5 C23.6 12.2 23 15 23 15 C23 15 22.4 12.2 20.5 11.5 C22.4 10.8 23 8 23 8 Z" fill="white" opacity="0.85"/>
+  <!-- small sparkle bottom-right -->
+  <path d="M22 21 C22 21 22.5 22.9 24 23.5 C22.5 24.1 22 26 22 26 C22 26 21.5 24.1 20 23.5 C21.5 22.9 22 21 22 21 Z" fill="white" opacity="0.7"/>
+</svg>
