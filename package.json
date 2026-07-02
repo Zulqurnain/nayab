@@ -6,9 +6,17 @@
     "dev": "next dev --port 3002",
     "build": "next build && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public",
     "start": "node .next/standalone/server.js",
+    "collab": "node scripts/collab-server.mjs",
     "lint": "next lint"
   },
   "dependencies": {
+    "@hocuspocus/server": "^4.3.0",
+    "@tiptap/core": "^2.6.6",
+    "@tiptap/extension-collaboration": "^2.6.6",
+    "@tiptap/extension-collaboration-cursor": "^2.6.6",
+    "@tiptap/pm": "^2.6.6",
+    "@tiptap/starter-kit": "^2.6.6",
+    "@tiptap/react": "^2.6.6",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.10.0",
     "drizzle-orm": "^0.45.2",
@@ -19,7 +27,9 @@
     "react-dom": "^19.0.0",
     "winston": "^3.19.0",
     "winston-daily-rotate-file": "^5.0.0",
-    "zod": "^4.4.3"
+    "yjs": "^13.6.20",
+    "zod": "^4.4.3",
+    "@hocuspocus/provider": "^4.3.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
