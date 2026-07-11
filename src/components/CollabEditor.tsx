@@ -37,11 +37,18 @@ export function CollabEditor({
       name: docId,
       document: doc,
       token: token ?? "",
-      connect: Boolean(token),
       onConnect: () => setReady(true),
       onDisconnect: () => setReady(false),
       onSynced: () => setReady(true),
     });
+
+    // HocuspocusProvider's inline-url constructor form has no connect-control
+    // field of its own (that only exists on a separately-constructed
+    // HocuspocusProviderWebsocket) -- it auto-connects by default, so
+    // explicitly disconnect when there's no token instead.
+    if (!token) {
+      p.disconnect();
+    }
 
     return { provider: p, ydoc: doc };
   }, [docId, token]);
