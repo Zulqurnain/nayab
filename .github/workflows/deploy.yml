@@ -33,9 +33,10 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            set -e
             cd /root/nayab
             GIT_SSH_COMMAND="ssh -i /root/.ssh/github_vps -o StrictHostKeyChecking=no" git pull origin main
-            npm ci --omit=dev
+            npm ci
             pm2 stop offllama-server || true
             NODE_OPTIONS="--max-old-space-size=512" npm run build
             cp -r public/. .next/standalone/public/ 2>/dev/null || true
