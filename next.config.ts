@@ -1,8 +1,20 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const nextConfig: NextConfig = {
   output: "standalone",
   basePath: "/chat",
+
+  // A stray /root/package-lock.json makes Turbopack infer /root as the
+  // workspace root (it picks whichever directory holds a lockfile that
+  // isn't this project's own), which nests the standalone build output
+  // under .next/standalone/nayab/ instead of .next/standalone/ directly --
+  // breaking the deploy script and pm2, which both expect it flat. Pin the
+  // root explicitly so this can't happen regardless of what else exists
+  // above this directory.
+  turbopack: {
+    root: path.join(__dirname),
+  },
 
   // Layer 3 & 12: External packages that need native bindings
   serverExternalPackages: ["pdf-parse", "better-sqlite3", "winston", "winston-daily-rotate-file"],
