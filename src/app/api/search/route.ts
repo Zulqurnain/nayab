@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
     // DuckDuckGo Instant Answer API
     const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1&skip_disambig=1`;
     const res = await fetch(ddgUrl, {
-      headers: { "User-Agent": "Nayab/1.0 (chat.zulqurnainj.com)" },
+      headers: { "User-Agent": "Nayab/1.0 (zulqurnainj.com/chat)" },
       signal: AbortSignal.timeout(8_000),
     });
 

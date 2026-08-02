@@ -3,7 +3,7 @@
  * Gumroad POSTs here on every sale. No auth needed on their end (we verify the ping).
  *
  * Setup: In Gumroad dashboard → Settings → Advanced → Ping URL → set to
- * https://chat.zulqurnainj.com/api/webhooks/gumroad
+ * https://zulqurnainj.com/chat/api/webhooks/gumroad
  */
 import { NextRequest, NextResponse } from "next/server";
 import { logRequest } from "@/lib/logger";

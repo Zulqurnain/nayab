@@ -3,4 +3,4 @@ Allow: /
 Disallow: /api/
 Disallow: /auth/
 
-Sitemap: https://chat.zulqurnainj.com/sitemap.xml
+Sitemap: https://zulqurnainj.com/chat/sitemap.xml

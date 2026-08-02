@@ -58,7 +58,7 @@ export async function requirePaid(
 
 /** Standard CORS headers for API routes */
 export function corsHeaders(origin?: string | null): Record<string, string> {
-  const allowed = process.env.ALLOWED_ORIGINS?.split(",") ?? ["https://chat.zulqurnainj.com"];
+  const allowed = process.env.ALLOWED_ORIGINS?.split(",") ?? ["https://zulqurnainj.com"];
   const o = origin ?? "*";
   const isAllowed = allowed.includes(o) || allowed.includes("*");
   return {
