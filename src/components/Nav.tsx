@@ -12,6 +12,7 @@ export function Nav() {
 
   const user = session?.user as { email?: string; plan?: string } | undefined;
   const isPro = user?.plan === "paid";
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 border-b border-stone-200 bg-white/95 backdrop-blur-sm">
@@ -36,6 +37,25 @@ export function Nav() {
 
         {/* Right side */}
         <div className="flex items-center gap-2">
+          {/* Mobile nav toggle — the nav links above are hidden below sm with no
+              other way to reach Chat/About/Pricing/llms.txt/sitemap on mobile */}
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen((v) => !v)}
+            aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileNavOpen}
+            className="sm:hidden flex items-center justify-center size-8 rounded-lg text-stone-600 hover:bg-stone-100 transition-colors"
+          >
+            {mobileNavOpen ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="size-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="size-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+              </svg>
+            )}
+          </button>
           {status === "loading" ? (
             <div className="size-7 rounded-full bg-stone-100 animate-pulse" />
           ) : user ? (
@@ -109,6 +129,17 @@ export function Nav() {
           )}
         </div>
       </div>
+
+      {mobileNavOpen && (
+        <nav className="sm:hidden border-t border-stone-200 bg-white flex flex-col divide-y divide-stone-100">
+          <MenuItem href="/" onClick={() => setMobileNavOpen(false)}>Chat</MenuItem>
+          <MenuItem href="/about" onClick={() => setMobileNavOpen(false)}>About</MenuItem>
+          <MenuItem href="/pricing" onClick={() => setMobileNavOpen(false)}>Pricing</MenuItem>
+          {user && <MenuItem href="/dashboard" onClick={() => setMobileNavOpen(false)}>Dashboard</MenuItem>}
+          <a href="/llms.txt" className="block px-4 py-2.5 text-sm text-stone-400">llms.txt</a>
+          <a href="/sitemap.xml" className="block px-4 py-2.5 text-sm text-stone-400">sitemap</a>
+        </nav>
+      )}
     </header>
   );
 }

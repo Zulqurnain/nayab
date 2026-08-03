@@ -73,8 +73,11 @@ export function ChatInterface() {
     } catch { /* non-critical */ }
   }, []);
 
-  // Load license from localStorage on mount
+  // Load license from localStorage on mount. Deliberately deferred to an
+  // effect (not a useState lazy initializer) so the client's first render
+  // matches the server-rendered HTML before hydration reads localStorage.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLicense(loadLicense());
     refreshUsage();
   }, [refreshUsage]);

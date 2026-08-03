@@ -7,16 +7,17 @@
     "build": "next build && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public",
     "start": "node .next/standalone/server.js",
     "collab": "node scripts/collab-server.mjs",
-    "lint": "next lint"
+    "lint": "eslint"
   },
   "dependencies": {
+    "@hocuspocus/provider": "^4.3.0",
     "@hocuspocus/server": "^4.3.0",
     "@tiptap/core": "^2.6.6",
     "@tiptap/extension-collaboration": "^2.6.6",
     "@tiptap/extension-collaboration-cursor": "^2.6.6",
     "@tiptap/pm": "^2.6.6",
-    "@tiptap/starter-kit": "^2.6.6",
     "@tiptap/react": "^2.6.6",
+    "@tiptap/starter-kit": "^2.6.6",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.10.0",
     "drizzle-orm": "^0.45.2",
@@ -28,8 +29,7 @@
     "winston": "^3.19.0",
     "winston-daily-rotate-file": "^5.0.0",
     "yjs": "^13.6.20",
-    "zod": "^4.4.3",
-    "@hocuspocus/provider": "^4.3.0"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -39,6 +39,8 @@
     "@types/pdf-parse": "^1.1.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.2.6",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

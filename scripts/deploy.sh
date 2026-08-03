@@ -38,6 +38,12 @@ echo "[deploy] Copying static assets..."
 cp -r public/. .next/standalone/public/ 2>/dev/null || true
 cp -r .next/static/. .next/standalone/.next/static/ 2>/dev/null || true
 
+# Next's standalone server.js chdir()s into .next/standalone/ before loading
+# env, so .env.local sitting at the repo root never reaches the running
+# process unless it's copied alongside server.js too.
+echo "[deploy] Copying runtime env..."
+cp .env.local .next/standalone/.env.local 2>/dev/null || echo "[deploy] WARNING: .env.local not found, runtime env vars (NEXTAUTH_URL etc.) will be missing"
+
 # Restart app with PM2 (graceful reload for zero downtime)
 echo "[deploy] Reloading PM2 (zero downtime)..."
 pm2 reload nayab --update-env || pm2 restart nayab

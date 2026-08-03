@@ -41,6 +41,7 @@ jobs:
             NODE_OPTIONS="--max-old-space-size=512" npm run build
             cp -r public/. .next/standalone/public/ 2>/dev/null || true
             cp -r .next/static/. .next/standalone/.next/static/ 2>/dev/null || true
+            cp .env.local .next/standalone/.env.local 2>/dev/null || echo "WARNING: .env.local not found"
             pm2 reload nayab --update-env || pm2 restart nayab
             pm2 start offllama-server || true
             pm2 save

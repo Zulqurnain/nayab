@@ -11,7 +11,12 @@ export async function middleware(req: NextRequest) {
     if (!token) {
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/auth/login";
-      loginUrl.searchParams.set("callbackUrl", req.nextUrl.href);
+      // Build the callback URL from a trusted, explicit origin rather than
+      // req.nextUrl.href — behind this proxy setup req.nextUrl can resolve
+      // to an internal address (e.g. localhost:PORT) instead of the real
+      // public origin.
+      const origin = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin;
+      loginUrl.searchParams.set("callbackUrl", `${origin}${pathname}${req.nextUrl.search}`);
       return NextResponse.redirect(loginUrl);
     }
   }
